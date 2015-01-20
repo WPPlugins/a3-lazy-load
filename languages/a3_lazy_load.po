@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: a3 Lazy Load\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-12-19 13:01+0700\n"
-"PO-Revision-Date: 2014-12-19 13:01+0700\n"
+"POT-Creation-Date: 2014-12-23 17:37+0700\n"
+"PO-Revision-Date: 2014-12-23 17:37+0700\n"
 "Last-Translator: Nguyen Cong Tuan <mr.nguyencongtuan@gmail.com>\n"
 "Language-Team: a3rev\n"
 "Language: en\n"
@@ -212,11 +212,17 @@ msgid "Reset Settings"
 msgstr ""
 
 #: admin/admin-pages/admin-settings-page.php:62
+#: admin/admin-pages/admin-settings-page.php:77
 msgid "a3 Lazy Load"
 msgstr ""
 
 #: admin/admin-pages/admin-settings-page.php:63
 msgid "Lazy Load"
+msgstr ""
+
+#: admin/admin-pages/admin-settings-page.php:78
+#: classes/class-a3-lazy-load-filter.php:16
+msgid "Settings"
 msgstr ""
 
 #: admin/admin-ui.php:135
@@ -370,6 +376,6 @@ msgstr ""
 msgid "Comming Soon"
 msgstr ""
 
-#: classes/class-a3-lazy-load-filter.php:16
-msgid "Settings"
+#: classes/class-a3-lazy-load-filter.php:17
+msgid "Support"
 msgstr ""

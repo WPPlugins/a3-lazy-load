@@ -42,15 +42,15 @@ class A3_Lazy_Load
 		add_filter( 'a3_lazy_load_html', array( $this, 'filter' ), 10, 1 );
 		add_filter( 'a3_lazy_load_images', array( $this, 'filter' ), 10, 1 );
 
-		$skip_classes = $a3_lazy_load_global_settings['a3l_skip_image_with_class'];
+		$skip_classes = apply_filters( 'a3_lazy_load_skip_classes', $a3_lazy_load_global_settings['a3l_skip_image_with_class'] );
 		if ( strlen( trim( $skip_classes ) ) ) {
-			$this->_skip_classes = array_map( 'trim', explode( ',', $a3_lazy_load_global_settings['a3l_skip_image_with_class'] ) );
+			$this->_skip_classes = array_map( 'trim', explode( ',', $skip_classes ) );
 		}
 
 		$this->_placeholder_url = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
 		if ( $a3_lazy_load_global_settings['a3l_apply_to_content'] == true ) {
-			add_filter( 'the_content', array( $this, 'filter' ), 200 );
+			add_filter( 'the_content', array( $this, 'filter_content' ), 7 );
 		}
 		if ( $a3_lazy_load_global_settings['a3l_apply_to_textwidget'] == true ) {
 			add_filter( 'widget_text', array( $this, 'filter' ), 200 );
@@ -141,6 +141,24 @@ class A3_Lazy_Load
 		}
 
 		return false;
+	}
+
+	static function filter_content( $content ) {
+		$A3_Lazy_Load = A3_Lazy_Load::_instance();
+		add_filter( 'wp_get_attachment_image_attributes', array( $A3_Lazy_Load, 'get_attachment_image_attributes' ), 200 );
+
+		return $A3_Lazy_Load->filter( $content );
+	}
+
+	static function get_attachment_image_attributes( $attr ) {
+		$A3_Lazy_Load = A3_Lazy_Load::_instance();
+
+		$attr['data-src'] = $attr['src'];
+		$attr['src'] = $A3_Lazy_Load->_placeholder_url;
+		$attr['class'] = 'lazy-hidden '. $attr['class'];
+		$attr['data-lazy-type'] = 'image';
+
+		return $attr;
 	}
 
 	static function filter( $content ) {

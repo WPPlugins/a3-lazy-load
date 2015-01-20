@@ -4,17 +4,17 @@ Contributors: a3rev, A3 Revolution Software Development team
 Tags: a3 lazy load, Lazy Loading , image lazy load, lazyload
 Requires at least: 4.0
 Tested up to: 4.1.0
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-Use a3 Lazy Load to instantly improve your sites load time while dramatically improving site visitors user experience. 
-  
+Use a3 Lazy Load to instantly improve your sites load time while dramatically improving site visitors user experience.
+
 == Description ==
 
 Inspired by Facebook lazy Load UI - a3 lazy Load is a Mobile Oriented, easily customizable plugin that will speed up site performance, the more content heavy your site the better the plugin will perform and the more you will see the improvements in performance. a3 Lazy Load is inspired by and powered by the ressio [Lazy-Load-xt JavaScript](https://github.com/ressio/lazy-load-xt).
 
-a3 Lazy load reduces the number of http calls when a page loads by only loading elements on a page that are visible in the users browser. As the user scroll down the page the next lot of elements are loaded as they become visible in the view port. 
+a3 Lazy load reduces the number of http calls when a page loads by only loading elements on a page that are visible in the users browser. As the user scroll down the page the next lot of elements are loaded as they become visible in the view port.
 
 = Easy Configuration =
 
@@ -28,7 +28,7 @@ From the admin panel use ON | OFF switches to activate or deactivate lazy load o
 
 = Lazy Load Effects =
 
-a3 lazy Load gives you the option to lazy load images with a FADE IN or SPINNER effect. 
+a3 lazy Load gives you the option to lazy load images with a FADE IN or SPINNER effect.
 
 * FADEIN [see demo](http://ressio.github.io/lazy-load-xt/demo/fadein.htm)
 * SPINNER [see demo](http://ressio.github.io/lazy-load-xt/demo/spinner.htm)
@@ -39,7 +39,7 @@ a3 lazy Load is built and tested to be fully compatible with the WooCommerce plu
 
 = Asset Load =
 
-a3 Lazy Load gives you the option to load its script from your sites HEAD or from the FOOT. 
+a3 Lazy Load gives you the option to load its script from your sites HEAD or from the FOOT.
 
 * Note that your theme must have the wp_footer() function if you select FOOTER load.
 * Note the plugin CSS is always loaded from the HEAD.
@@ -83,10 +83,10 @@ a3 lazy Load is tested 100% compatible with all major browsers.
 
 * Full support for responsive images.
 * Full support of jQueryMobile framework
-* WordPress Multi site ready. 
+* WordPress Multi site ready.
 * Backend support for RTL display.
 * Translation ready
- 
+
 
 == Installation ==
 
@@ -95,7 +95,7 @@ a3 lazy Load is tested 100% compatible with all major browsers.
 * WordPress 4.0
 * PHP version 5.2.4 or greater
 * MySQL version 5.1.73 or greater
- 
+
 = Automatic installation =
 
 Automatic installation is the easiest option as WordPress handles the file transfers itself and you don't even need to leave your web browser. To do an automatic install of a3 Lazy Load, log in to your WordPress admin panel, navigate to the Plugins menu and click Add New. Search a3 Lazy load, select and install.
@@ -103,19 +103,31 @@ Automatic installation is the easiest option as WordPress handles the file trans
 == Screenshots ==
 
 1. Admin Dashboard.
- 
- 
+
+
 == Usage ==
 
 1. Install and activate the plugin
 
 2. On wp-admin a3 Lazy Laod one page admin panel check the settings.
 
-3. Enjoy  
+3. Enjoy
 
 
 == Changelog ==
 
+= 1.0.1 - 2014/12/23 =
+* Tweak - Applied lazy load for 'wp_get_attachment_image_attributes' filter tag for WordPress default [gallery] shortcode
+* Tweak - Added link to a3 Lazy Load wordpress.org support forum on plugins description that show on plugins menu
+* Dev - Defined 'a3_lazy_load_enable' function when Enable Lazy Load is set to ON. Plugin and Theme developers can use the function to edit their image attribute so that a3 lazy load script can apply to the images.
+* Dev - Defined 'a3_lazy_load_skip_classes' filter tag. Developers can add another class css name for images that they don't want lazy load applied too.
+* Fix - Lazy Load does not apply to images added by shortcode, excluding the WordPress default [gallery] shortcode
+
 = 1.0.0 - 2014/12/20 =
 * First working release
 
+
+== Update Notice ==
+
+= 1.0.1 =
+Upgrade your plugin now for apply lazy load to shortcodes fix plus plus a new developer function and class.
