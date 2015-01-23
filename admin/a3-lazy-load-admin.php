@@ -2,7 +2,7 @@
 update_option('a3rev_lazy_load_plugin', 'a3_lazy_load');
 
 function a3_lazy_load_activated(){
-	update_option('a3_lazy_load_version', '1.0.1');
+	update_option('a3_lazy_load_version', '1.0.2');
 
 	// Set Settings Default from Admin Init
 	global $a3_lazy_load_admin_init;
@@ -25,7 +25,7 @@ function a3_lazy_load_init() {
 
 	load_plugin_textdomain( 'a3_lazy_load', false, A3_LAZY_LOAD_FOLDER.'/languages' );
 
-	update_option('a3_lazy_load_version', '1.0.1');
+	update_option('a3_lazy_load_version', '1.0.2');
 }
 
 global $a3_lazy_load_admin_init;

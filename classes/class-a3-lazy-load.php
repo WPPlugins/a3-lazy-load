@@ -37,14 +37,19 @@ class A3_Lazy_Load
 			return;
 		}
 
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ), 11 );
 
-		add_filter( 'a3_lazy_load_html', array( $this, 'filter' ), 10, 1 );
-		add_filter( 'a3_lazy_load_images', array( $this, 'filter' ), 10, 1 );
+		add_filter( 'a3_lazy_load_html', array( $this, 'filter' ), 10, 2 );
+		add_filter( 'a3_lazy_load_images', array( $this, 'filter' ), 10, 2 );
 
 		$skip_classes = apply_filters( 'a3_lazy_load_skip_classes', $a3_lazy_load_global_settings['a3l_skip_image_with_class'] );
 		if ( strlen( trim( $skip_classes ) ) ) {
 			$this->_skip_classes = array_map( 'trim', explode( ',', $skip_classes ) );
+		}
+		if ( is_array( $this->_skip_classes ) ) {
+			$this->_skip_classes = array_merge( array('a3-notlazy'), $this->_skip_classes );
+		} else {
+			$this->_skip_classes = array('a3-notlazy');
 		}
 
 		$this->_placeholder_url = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
@@ -98,6 +103,7 @@ class A3_Lazy_Load
 		}
 
 		do_action('before_a3_lazy_load_xt_script');
+		wp_deregister_script( 'jquery-lazyloadxt' );
 		wp_enqueue_script( 'jquery-lazyloadxt', apply_filters( 'a3_lazy_load_main_script', A3_LAZY_LOAD_JS_URL.'/jquery.lazyloadxt'.$suffix.'.js' ), array( 'jquery' ), self::version, $in_footer );
 		do_action('after_a3_lazy_load_xt_script');
 	}
@@ -161,7 +167,7 @@ class A3_Lazy_Load
 		return $attr;
 	}
 
-	static function filter( $content ) {
+	static function filter( $content, $noscript = true ) {
 		if( is_admin() ){
 			return $content;
 		}
@@ -178,7 +184,7 @@ class A3_Lazy_Load
 
 		$content = apply_filters( 'a3_lazy_load_images_before', $content );
 
-		$content = $A3_Lazy_Load->_filter_images( $content );
+		$content = $A3_Lazy_Load->_filter_images( $content, $noscript );
 
 		$content = apply_filters( 'a3_lazy_load_images_after', $content );
 
@@ -203,7 +209,7 @@ class A3_Lazy_Load
 		return $content;
 	}
 
-	protected function _filter_images( $content ) {
+	protected function _filter_images( $content, $noscript ) {
 
 		$matches = array();
 		preg_match_all( '/<img[\s\r\n]+.*?>/is', $content, $matches );
@@ -233,7 +239,9 @@ class A3_Lazy_Load
 					$replaceHTML = preg_replace( '/<img/is', '<img class="lazy lazy-hidden"', $replaceHTML );
 				}
 
-				$replaceHTML .= '<noscript>' . $imgHTML . '</noscript>';
+				if( $noscript ){
+					$replaceHTML .= '<noscript>' . $imgHTML . '</noscript>';
+				}
 
 				array_push( $search, $imgHTML );
 				array_push( $replace, $replaceHTML );

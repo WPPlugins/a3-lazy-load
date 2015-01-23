@@ -4,7 +4,7 @@ Contributors: a3rev, A3 Revolution Software Development team
 Tags: a3 lazy load, Lazy Loading , image lazy load, lazyload
 Requires at least: 4.0
 Tested up to: 4.1.0
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -116,6 +116,11 @@ Automatic installation is the easiest option as WordPress handles the file trans
 
 == Changelog ==
 
+= 1.0.2 - 2015/01/20 =
+* Tweak - Include wp_deregister_script( 'jquery-lazyloadxt' ) before wp_enqueue_script( 'jquery-lazyloadxt' ) for compatibility with a3 Portfolio plugin which supports video slides
+* Dev - Add new parameter $noscript boolen type for 'a3_lazy_load_html' and 'a3_lazy_load_images' filters to exclude or include noscript from content return of 3rd party plugins.
+* Dev - Added default exclude class 'a3-notlazy' so developers can easily apply it to images that they don't want Lazy Load to apply to.
+
 = 1.0.1 - 2014/12/23 =
 * Tweak - Applied lazy load for 'wp_get_attachment_image_attributes' filter tag for WordPress default [gallery] shortcode
 * Tweak - Added link to a3 Lazy Load wordpress.org support forum on plugins description that show on plugins menu
@@ -128,6 +133,9 @@ Automatic installation is the easiest option as WordPress handles the file trans
 
 
 == Update Notice ==
+
+= 1.0.2 =
+Upgrade now for an a3 Portfolio plugin compatibility code tweak and a new Dev parameter and exclude class.
 
 = 1.0.1 =
 Upgrade your plugin now for apply lazy load to shortcodes fix plus plus a new developer function and class.
