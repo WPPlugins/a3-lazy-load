@@ -312,3 +312,31 @@
     });
 
 })(window.jQuery || window.Zepto || window.$, window, document);
+
+(function ($) {
+    var options = $.lazyLoadXT;
+
+    options.selector += ',video,iframe[data-src],embed[data-src]';
+    options.videoPoster = 'data-poster';
+
+    $(document).on('lazyshow', 'video', function (e, $el) {
+        var srcAttr = $el.lazyLoadXT.srcAttr,
+            isFuncSrcAttr = $.isFunction(srcAttr);
+
+        $el
+            .attr('poster', $el.attr(options.videoPoster))
+            .children('source,track')
+            .each(function (index, el) {
+                var $child = $(el);
+                $child.attr('src', isFuncSrcAttr ? srcAttr($child) : $child.attr(srcAttr));
+            });
+        // reload video
+        this.load();
+        $(this).removeClass('lazy-hidden');
+    });
+
+    $(document).on('lazyshow', 'embed', function (e, $el) {
+        $(this).removeClass('lazy-hidden');
+    });
+
+})(window.jQuery || window.Zepto || window.$);

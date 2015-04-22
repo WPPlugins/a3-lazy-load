@@ -89,6 +89,12 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
 
 		add_action( $this->plugin_name . '_get_all_settings' , array( $this, 'get_settings' ) );
 
+		add_action( $this->plugin_name . '_settings_a3l_container_start_before', array( $this, 'a3l_container_start' ) );
+		add_action( $this->plugin_name . '_settings_a3l_container_end_after', array( $this, 'a3l_container_end' ) );
+
+		//add_action( $this->plugin_name . '_settings_a3l_videos_start_before', array( $this, 'a3l_videos_start' ) );
+		//add_action( $this->plugin_name . '_settings_a3l_videos_end_after', array( $this, 'a3l_videos_end' ) );
+
 	}
 
 	/*-----------------------------------------------------------------------------------*/
@@ -181,11 +187,10 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
      		array(
                 'type' 		=> 'heading',
            	),
-
            	array(
 				'name' 		=> __( 'Enable Lazy Load', 'a3_lazy_load' ),
-                'id' 		=> 'a3l_apply_to_loadimages',
-                'class'		=> 'a3l_apply_to_loadimages',
+                'id' 		=> 'a3l_apply_lazyloadxt',
+                'class'		=> 'a3l_apply_to_load',
 				'type' 		=> 'onoff_checkbox',
 				'default'	=> true,
 				'checked_value'		=> true,
@@ -195,16 +200,20 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
 			),
 
 			array(
-				'name'		=> __( 'Apply For Objects', 'a3_lazy_load' ),
                 'type' 		=> 'heading',
-                'class'		=> 'a3l_apply_to_loadimages_container'
+                'id'		=> 'a3l_container_start'
            	),
 
 			array(
-				'name' 		=> __( 'The Content', 'a3_lazy_load' ),
-                'id' 		=> 'a3l_apply_to_content',
+				'name'		=> __( 'Lazy Load Images', 'a3_lazy_load' ),
+                'type' 		=> 'heading',
+                'class'		=> 'a3l_apply_to_load_container a3l_apply_to_images_container'
+           	),
+           	array(
+				'name' 		=> __( 'Enable Lazy Load for Images', 'a3_lazy_load' ),
+                'id' 		=> 'a3l_apply_to_images',
 				'type' 		=> 'onoff_checkbox',
-				'default'	=> false,
+				'default'	=> true,
 				'checked_value'		=> true,
 				'unchecked_value'	=> false,
 				'checked_label'		=> __( 'ON', 'a3_lazy_load' ),
@@ -212,32 +221,81 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
 			),
 
 			array(
-				'name' 		=> __( 'Widgets', 'a3_lazy_load' ),
-                'id' 		=> 'a3l_apply_to_textwidget',
+                'type' 		=> 'heading',
+				'id'		=> 'a3l_images_start',
+				'class'		=> 'a3l_apply_to_load_container a3l_apply_to_load_images_container'
+           	),
+			array(
+				'name' 		=> __( 'Images in Content', 'a3_lazy_load' ),
+                'id' 		=> 'a3l_apply_image_to_content',
 				'type' 		=> 'onoff_checkbox',
-				'default'	=> false,
+				'default'	=> true,
 				'checked_value'		=> true,
 				'unchecked_value'	=> false,
 				'checked_label'		=> __( 'ON', 'a3_lazy_load' ),
 				'unchecked_label' 	=> __( 'OFF', 'a3_lazy_load' ),
 			),
-
+			array(
+				'name' 		=> __( 'Images in Widgets', 'a3_lazy_load' ),
+                'id' 		=> 'a3l_apply_image_to_textwidget',
+				'type' 		=> 'onoff_checkbox',
+				'default'	=> true,
+				'checked_value'		=> true,
+				'unchecked_value'	=> false,
+				'checked_label'		=> __( 'ON', 'a3_lazy_load' ),
+				'unchecked_label' 	=> __( 'OFF', 'a3_lazy_load' ),
+			),
 			array(
 				'name' 		=> __( 'Post Thumbnails', 'a3_lazy_load' ),
-                'id' 		=> 'a3l_apply_to_postthumbnails',
+                'id' 		=> 'a3l_apply_image_to_postthumbnails',
 				'type' 		=> 'onoff_checkbox',
-				'default'	=> false,
+				'default'	=> true,
 				'checked_value'		=> true,
 				'unchecked_value'	=> false,
 				'checked_label'		=> __( 'ON', 'a3_lazy_load' ),
 				'unchecked_label' 	=> __( 'OFF', 'a3_lazy_load' ),
 			),
-
 			array(
 				'name' 		=> __( 'Gravatars', 'a3_lazy_load' ),
-                'id' 		=> 'a3l_apply_to_gravatars',
+                'id' 		=> 'a3l_apply_image_to_gravatars',
 				'type' 		=> 'onoff_checkbox',
-				'default'	=> false,
+				'default'	=> true,
+				'checked_value'		=> true,
+				'unchecked_value'	=> false,
+				'checked_label'		=> __( 'ON', 'a3_lazy_load' ),
+				'unchecked_label' 	=> __( 'OFF', 'a3_lazy_load' ),
+			),
+			array(
+				'name' => __( 'Skip Images Classes', 'a3_lazy_load' ),
+				'id' 		=> 'a3l_skip_image_with_class',
+				'desc' 		=>  __('Comma separated. Example: "no-lazy, lazy-ignore, image-235"', 'a3_lazy_load'),
+				'type' 		=> 'text',
+				'default'	=> ""
+			),
+			array(
+				'name' 		=> __( 'Noscript Support', 'a3_lazy_load' ),
+                'id' 		=> 'a3l_image_include_noscript',
+                'desc'		=> __( 'Turn ON to activate Noscript tag as a fallback to show images for users who have JavaScript disabled in their browser.', 'a3_lazy_load' ),
+				'type' 		=> 'onoff_checkbox',
+				'default'	=> true,
+				'checked_value'		=> true,
+				'unchecked_value'	=> false,
+				'checked_label'		=> __( 'ON', 'a3_lazy_load' ),
+				'unchecked_label' 	=> __( 'OFF', 'a3_lazy_load' ),
+			),
+
+
+			array(
+				'name'		=> __( 'Lazy Load Videos and iframes', 'a3_lazy_load' ),
+                'type' 		=> 'heading',
+                'class'		=> 'a3l_apply_to_load_container a3l_apply_to_videos_container'
+           	),
+           	array(
+				'name' 		=> __( 'Video and iframes', 'a3_lazy_load' ),
+				'desc'		=> sprintf( __( 'Turn ON to activate Lazy Load for <a href="%s" target="_blank">WordPress Embeds</a>, <a href="%s" target="_blank">HTML5 Video</a> and content loaded by iframe from all sources. Note: WordPress Shortcode is not supported.', 'a3_lazy_load' ), 'http://codex.wordpress.org/Embeds/', 'http://www.w3schools.com/html/html5_video.asp' ),
+                'id' 		=> 'a3l_apply_to_videos',
+				'type' 		=> 'onoff_checkbox',
+				'default'	=> true,
 				'checked_value'		=> true,
 				'unchecked_value'	=> false,
 				'checked_label'		=> __( 'ON', 'a3_lazy_load' ),
@@ -245,7 +303,57 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
 			),
 
 			array(
+                'type' 		=> 'heading',
+				'id'		=> 'a3l_videos_start',
+				'class'		=> 'a3l_apply_to_load_container a3l_apply_to_load_videos_container'
+           	),
+			array(
+				'name' 		=> __( 'In Content', 'a3_lazy_load' ),
+                'id' 		=> 'a3l_apply_video_to_content',
+				'type' 		=> 'onoff_checkbox',
+				'default'	=> true,
+				'checked_value'		=> true,
+				'unchecked_value'	=> false,
+				'checked_label'		=> __( 'ON', 'a3_lazy_load' ),
+				'unchecked_label' 	=> __( 'OFF', 'a3_lazy_load' ),
+			),
+			array(
+				'name' 		=> __( 'In Widgets', 'a3_lazy_load' ),
+                'id' 		=> 'a3l_apply_video_to_textwidget',
+				'type' 		=> 'onoff_checkbox',
+				'default'	=> true,
+				'checked_value'		=> true,
+				'unchecked_value'	=> false,
+				'checked_label'		=> __( 'ON', 'a3_lazy_load' ),
+				'unchecked_label' 	=> __( 'OFF', 'a3_lazy_load' ),
+			),
+			array(
+				'name' => __( 'Skip Videos Classes', 'a3_lazy_load' ),
+				'id' 		=> 'a3l_skip_video_with_class',
+				'desc' 		=>  __('Comma separated. Example: "no-lazy, lazy-ignore, video-235"', 'a3_lazy_load'),
+				'type' 		=> 'text',
+				'default'	=> ""
+			),
+			array(
+				'name' 		=> __( 'Noscript Support', 'a3_lazy_load' ),
+                'id' 		=> 'a3l_video_include_noscript',
+                'desc'		=> __( 'Turn ON to activate Noscript tag as a fallback to show WordPress Embeds, HTML 5 Video and iframe loaded content for users who have JavaScript disabled in their browser.', 'a3_lazy_load' ),
+				'type' 		=> 'onoff_checkbox',
+				'default'	=> true,
+				'checked_value'		=> true,
+				'unchecked_value'	=> false,
+				'checked_label'		=> __( 'ON', 'a3_lazy_load' ),
+				'unchecked_label' 	=> __( 'OFF', 'a3_lazy_load' ),
+			),
+
+			array(
+				'name'		=> __( 'Script Load Optimization', 'a3_lazy_load' ),
+                'type' 		=> 'heading',
+                'class'		=> 'a3l_apply_to_load_container a3l_apply_to_script_container'
+           	),
+			array(
 				'name' 		=> __( 'Theme Loader Function', 'a3_lazy_load' ),
+				'desc'		=> __( 'Your theme must have the wp_footer() function if you select FOOTER load.', 'a3_lazy_load' ),
 				'id' 		=> 'a3l_theme_loader',
 				'type' 		=> 'switcher_checkbox',
 				'default'	=> 'wp_footer',
@@ -256,13 +364,10 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
 			),
 
 			array(
-				'name' => __( 'Skip Images Classes', 'a3_lazy_load' ),
-				'id' 		=> 'a3l_skip_image_with_class',
-				'desc' 		=>  __('Comma separated. Example: "no-lazy, lazy-ignore, image-235"', 'a3_lazy_load'),
-				'type' 		=> 'text',
-				'default'	=> ""
-			),
-
+				'name'		=> __( 'WordPress Mobile Template Plugins', 'a3_lazy_load' ),
+                'type' 		=> 'heading',
+                'class'		=> 'a3l_apply_to_load_container'
+           	),
 			array(
 				'name' 		=> __( 'Disable On WPTouch', 'a3_lazy_load' ),
 				'desc' 		=>  __("Disables a3 Lazy Load when the WPTouch mobile theme is used", 'a3_lazy_load'),
@@ -274,7 +379,6 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
 				'checked_label'		=> __( 'ON', 'a3_lazy_load' ),
 				'unchecked_label' 	=> __( 'OFF', 'a3_lazy_load' ),
 			),
-
 			array(
 				'name' 		=> __( 'Disable On MobilePress', 'a3_lazy_load' ),
 				'desc' 		=>  __("Disables a3 Lazy Load when the MobilePress mobile theme is used", 'a3_lazy_load'),
@@ -290,29 +394,39 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
 			array(
 				'name' 		=> __( 'Effect & Style', 'a3_lazy_load' ),
 				'id' 		=> "a3l_settings_style",
-				'class'		=> 'a3l_apply_to_loadimages_container',
+				'class'		=> 'a3l_apply_to_load_container a3l_apply_to_effect_container',
                 'type' 		=> 'heading',
            	),
-
 			array(
-				'name' 		=> __( 'Effect', 'a3_lazy_load' ),
+				'name' 		=> __( 'Loading Effect', 'a3_lazy_load' ),
 				'id' 		=> 'a3l_effect',
 				'type' 		=> 'switcher_checkbox',
-				'default'	=> 'fadein',
+				'default'	=> 'spinner',
 				'checked_value'		=> 'fadein',
 				'unchecked_value'	=> 'spinner',
-				'checked_label'		=> __( 'FADEIN', 'a3_lazy_load' ),
+				'checked_label'		=> __( 'FADE IN', 'a3_lazy_load' ),
 				'unchecked_label' 	=> __( 'SPINNER', 'a3_lazy_load' ),
 			),
-
 			array(
-				'name' 		=> __( 'Background Blank Image Colour', 'a3_lazy_load' ),
+				'name' 		=> __( 'Loading Background Colour', 'a3_lazy_load' ),
 				'id' 		=> 'a3l_effect_background',
 				'type' 		=> 'color',
 				'default'	=> '#ffffff'
 			),
 
+			array(
+                'type' 		=> 'heading',
+                'id'		=> 'a3l_container_end'
+           	),
+
      	));
+	}
+
+	public function a3l_container_start() {
+		echo '<div class="a3l_container">';	
+	}
+	public function a3l_container_end() {
+		echo '</div>';	
 	}
 
 	public function include_script() {
@@ -321,20 +435,52 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
 (function($) {
 	$(document).ready(function() {
 
-		if ( $("input.a3l_apply_to_loadimages:checked").val() == '1') {
-			$(".a3l_apply_to_loadimages_container").css( {'visibility': 'visible', 'height' : 'auto', 'overflow' : 'inherit'} );
+		if ( $("input.a3l_apply_to_load").is(":checked") ) {
+			$(".a3l_container").css( {'visibility': 'visible', 'height' : 'auto', 'overflow' : 'inherit'} );
 		} else {
-			$(".a3l_apply_to_loadimages_container").css( {'visibility': 'hidden', 'height' : '0px', 'overflow' : 'hidden'} );
+			$(".a3l_container").css( {'visibility': 'hidden', 'height' : '0px', 'overflow' : 'hidden'} );
 		}
 
-		$(document).on( "a3rev-ui-onoff_checkbox-switch", '.a3l_apply_to_loadimages', function( event, value, status ) {
-			$(".a3l_apply_to_loadimages_container").hide().css( {'visibility': 'visible', 'height' : 'auto', 'overflow' : 'inherit'} );
+		$(document).on( "a3rev-ui-onoff_checkbox-switch", '.a3l_apply_to_load', function( event, value, status ) {
+			$(".a3l_container").hide().css( {'visibility': 'visible', 'height' : 'auto', 'overflow' : 'inherit'} );
 			if ( status == 'true' ) {
-				$(".a3l_apply_to_loadimages_container").slideDown();
+				$(".a3l_container").slideDown();
 			} else {
-				$(".a3l_apply_to_loadimages_container").slideUp();
+				$(".a3l_container").slideUp();
 			}
 		});
+
+		if ( $("input#a3_lazy_load_global_settings_a3l_apply_to_images:checked").val() == '1') {
+			$("#a3l_images_start").css( {'visibility': 'visible', 'height' : 'auto', 'overflow' : 'inherit'} );
+		} else {
+			$("#a3l_images_start").css( {'visibility': 'hidden', 'height' : '0px', 'overflow' : 'hidden'} );
+		}
+
+		$(document).on( "a3rev-ui-onoff_checkbox-switch", '#a3_lazy_load_global_settings_a3l_apply_to_images', function( event, value, status ) {
+			$("#a3l_images_start").hide().css( {'visibility': 'visible', 'height' : 'auto', 'overflow' : 'inherit'} );
+			if ( status == 'true' ) {
+				$("#a3l_images_start").slideDown();
+			} else {
+				$("#a3l_images_start").slideUp();
+			}
+		});
+
+		if ( $("input#a3_lazy_load_global_settings_a3l_apply_to_videos:checked").val() == '1' ) {
+			$("#a3l_videos_start").css( {'visibility': 'visible', 'height' : 'auto', 'overflow' : 'inherit'} );
+		} else {
+			$("#a3l_videos_start").css( {'visibility': 'hidden', 'height' : '0px', 'overflow' : 'hidden'} );
+		}
+
+		$(document).on( "a3rev-ui-onoff_checkbox-switch", '#a3_lazy_load_global_settings_a3l_apply_to_videos', function( event, value, status ) {
+			$("#a3l_videos_start").hide().css( {'visibility': 'visible', 'height' : 'auto', 'overflow' : 'inherit'} );
+			if ( status == 'true' ) {
+				$("#a3l_videos_start").slideDown();
+			} else {
+				$("#a3l_videos_start").slideUp();
+			}
+		});
+
+
 	});
 })(jQuery);
 </script>

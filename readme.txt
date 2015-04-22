@@ -4,49 +4,78 @@ Contributors: a3rev, A3 Revolution Software Development team
 Tags: a3 lazy load, Lazy Loading , image lazy load, lazyload
 Requires at least: 4.0
 Tested up to: 4.1.0
-Stable tag: 1.0.2
+Stable tag: 1.1.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-Use a3 Lazy Load to instantly improve your sites load time while dramatically improving site visitors user experience.
+Use a3 Lazy Load for images, videos, iframes. Instantly improve your sites load time and dramatically improve site user’s experience.
 
 == Description ==
 
-Inspired by Facebook lazy Load UI - a3 lazy Load is a Mobile Oriented, easily customizable plugin that will speed up site performance, the more content heavy your site the better the plugin will perform and the more you will see the improvements in performance. a3 Lazy Load is inspired by and powered by the ressio [Lazy-Load-xt JavaScript](https://github.com/ressio/lazy-load-xt).
+a3 Lazy Load is a Mobile Oriented, simple to use plugin that will speed up site performance. The more content heavy your site the better the plugin will perform and the more you will see the improvements in performance. See [this demo](http://ressio.github.io/lazy-load-xt/demo/stresstest1000img.htm) of a page with 1,000 images (yes 1,000 images) to load.
 
-a3 Lazy load reduces the number of http calls when a page loads by only loading elements on a page that are visible in the users browser. As the user scroll down the page the next lot of elements are loaded as they become visible in the view port.
+a3 Lazy Load is inspired by and powered by the ressio [Lazy-Load-xt JavaScript](https://github.com/ressio/lazy-load-xt).
 
-= Easy Configuration =
+a3 Lazy Load is the most fully featured lazy load plugin for WordPress. Use the plugins admin settings to easily define what elements are lazy loaded when they become visible in the users browser. As the user scroll down the page the next lot of elements you have applied lazy Load to are only loaded as they become visible in the view port.
 
-From the admin panel use ON | OFF switches to activate or deactivate lazy load on these elements. - See Screenshot
+= Image Lazy Load =
 
-* Lazy load images
-* Apply to content
-* Apply to text widgets
+Images are the number one element that slows page load and increases bandwidth use. From the a3 Lazy Load admin panel turn load images by a3 Lazy Load ON | OFF. For more flexibility when ON you can choose to ON | OFF lazy load for images in
+
+* Post and Pages (All Content areas)
+* Widgets (Sidebar, header and footer)
 * Apply to post thumbnails
 * Apply to gravatars
 
+= More than just Images =
+
+= Video Lazy Load =
+
+a3 Lazy Load supports all WordPress video Embeds including Youtube, Vimeo and HTML5 video - for a full list see the [WordPress Codex Embeds](http://codex.wordpress.org/Embeds) list. The WordPress embed method of copying and pasting the video url into posts and pages content area is fully supported. Note - embed video by WordPress shortcode is not supported.
+
+From the a3 lazy Load admin panel turn Video Support ON | OFF. When ON you can choose to ON | OFF lazy load for videos in
+
+* Post and Pages (All Content areas)
+* Widgets (Sidebar, header and footer)
+
+* Youtube [see demo](http://ressio.github.io/lazy-load-xt/demo/youtube-iframe.htm)
+* Video [see demo](http://ressio.github.io/lazy-load-xt/demo/video-html5.htm)
+
+= Elements loaded by iframe =
+
+a3 Lazy Load has built in support for content that is added by iframe from any source in content and widgets - examples
+
+* WordPress embedded media
+* Facebook Like boxes with profiles, Like buttons, Recommend
+* Google+ Profile
+* Google Maps
+
 = Lazy Load Effects =
 
-a3 lazy Load gives you the option to lazy load images with a FADE IN or SPINNER effect.
+a3 Lazy Load gives you the option to lazy load images with a FADE IN or SPINNER effect.
 
 * FADEIN [see demo](http://ressio.github.io/lazy-load-xt/demo/fadein.htm)
 * SPINNER [see demo](http://ressio.github.io/lazy-load-xt/demo/spinner.htm)
+* Option to create a custom Lazy Load pre-load background colour
 
 = WooCommerce =
 
-a3 lazy Load is built and tested to be fully compatible with the WooCommerce plugin.
+a3 lazy Load is built and tested to be fully compatible with the very widely used WooCommerce plugin.
 
-= Asset Load =
+= Performance Tweak =
 
 a3 Lazy Load gives you the option to load its script from your sites HEAD or from the FOOT.
 
 * Note that your theme must have the wp_footer() function if you select FOOTER load.
 * Note the plugin CSS is always loaded from the HEAD.
 
-= Exempt Images =
+= Exclude Images and Videos =
 
-a3 Lazy Load allows you to easily exempt any image from having the Lazy Load effect applied.
+a3 Lazy Load allows you to easily exclude any images and video by class name from having the Lazy Load effect applied.
+
+= JavaScript Disabled Fallback =
+
+a3 Lazy Load has built in Noscript fallback if user has JavaScript turned off in their browser. Developers who use underscore.js in their applications can use the Noscript parameter to exclude their plugins content from Lazy Load.
 
 = Theme Compatibility =
 
@@ -81,7 +110,6 @@ a3 lazy Load is tested 100% compatible with all major browsers.
 
 = More Features =
 
-* Full support for responsive images.
 * Full support of jQueryMobile framework
 * WordPress Multi site ready.
 * Backend support for RTL display.
@@ -109,12 +137,31 @@ Automatic installation is the easiest option as WordPress handles the file trans
 
 1. Install and activate the plugin
 
-2. On wp-admin a3 Lazy Laod one page admin panel check the settings.
+2. On wp-admin a3 Lazy Load one page admin panel check the settings.
 
 3. Enjoy
 
 
 == Changelog ==
+
+= 1.1.0 - 2015/01/23 =
+* Feature - Added support for all WordPress video Embeds including Youtube, Vimeo and HTML5 video
+* Feature - Added support for content that is added by iframe from any source in post and page content and widgets
+* Feature - Added ON | OFF option for Noscript parameter for both images and video and iframes - fallback if user does not have JavaScript support turned on in browser.
+* Tweak - Reworked the plugins admin panel for new feature options. Separate settings for Images and Video / iframes
+* Tweak - Updated all the admin panel text and add new help text.
+* Tweak - Updated the plugins WordPress description with new features.
+* Tweak - Updated the plugins WordPress screenshot
+* Tweak - Updated the plugins WordPress banner image.
+* Dev - Updated 'a3_lazy_load_enable' function to edit their image or video attribute to enable a3 lazy load images or videos loaded by 3rd party application.
+* Dev - Defined 'a3_lazy_load_image_enable' function to edit image attribute to enable a3 lazy load to apply images loaded by 3rd party applications.
+* Dev - Defined 'a3_lazy_load_video_enable' function to edit image attribute so a3 lazy load script can apply to the videos, iframe.
+* Dev - Include 'var a3_lazyload_params = {"apply_images":"1","apply_videos":"1"};' JavaScript variable into frontend that get the option that are set from admin panel. Plugin and Theme developers can use that variable inside own script to check when Lazy Load apply for Image and for Video instead of use 'a3_lazy_load_video_enable' and 'a3_lazy_load_video_enable' functions in PHP code
+* Dev - Remove 'a3_lazy_load_skip_classes' filter tag, we will replace another filter for separate filters for image and videos
+* Dev - Defined 'a3_lazy_load_skip_images_classes' filter tag. Developers can add another class css name for images that they don't want lazy load applied too.
+* Dev - Defined 'a3_lazy_load_skip_videos_classes' filter tag. Developers can add another class css name for video that they don't want lazy load applied too.
+* Dev - Added default exclude class 'a3-notlazy' so developers can easily apply it to videos that they don't want Lazy Load to apply to.
+* Dev - Defined 'a3_lazy_load_videos' filter. Plugin and Theme developers can use this filter and parse the content with videos or iframe and the filter will return content with change on videos or iframe that a3 Lazy Load support
 
 = 1.0.2 - 2015/01/20 =
 * Tweak - Include wp_deregister_script( 'jquery-lazyloadxt' ) before wp_enqueue_script( 'jquery-lazyloadxt' ) for compatibility with a3 Portfolio plugin which supports video slides
@@ -132,7 +179,10 @@ Automatic installation is the easiest option as WordPress handles the file trans
 * First working release
 
 
-== Update Notice ==
+== Upgrade Notice ==
+
+= 1.1.0 =
+Major version release. Added support for WordPress Embeds - Youtube, Vimeo, HTML5 video and iframe content from all sources.
 
 = 1.0.2 =
 Upgrade now for an a3 Portfolio plugin compatibility code tweak and a new Dev parameter and exclude class.

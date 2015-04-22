@@ -2,7 +2,7 @@
 update_option('a3rev_lazy_load_plugin', 'a3_lazy_load');
 
 function a3_lazy_load_activated(){
-	update_option('a3_lazy_load_version', '1.0.2');
+	update_option('a3_lazy_load_version', '1.1.0');
 
 	// Set Settings Default from Admin Init
 	global $a3_lazy_load_admin_init;
@@ -25,7 +25,7 @@ function a3_lazy_load_init() {
 
 	load_plugin_textdomain( 'a3_lazy_load', false, A3_LAZY_LOAD_FOLDER.'/languages' );
 
-	update_option('a3_lazy_load_version', '1.0.2');
+	a3_lazy_load_upgrade_plugin();
 }
 
 global $a3_lazy_load_admin_init;
@@ -42,4 +42,15 @@ add_filter( 'plugin_row_meta', array( 'A3_Lazy_Load_Hook_Filter', 'plugin_extra_
 
 // Add admin sidebar menu css
 add_action( 'admin_enqueue_scripts', array( 'A3_Lazy_Load_Hook_Filter', 'admin_sidebar_menu_css' ) );
+
+// Check upgrade functions
+function a3_lazy_load_upgrade_plugin() {
+
+    if (version_compare(get_option('a3_lazy_load_version'), '1.1.0') === -1) {
+    	include( A3_LAZY_LOAD_DIR. '/includes/updates/a3-lazy-load-update-1.1.0.php' );
+        update_option('a3_lazy_load_version', '1.1.0');
+    }
+
+    update_option('a3_lazy_load_version', '1.1.0');
+}
 ?>

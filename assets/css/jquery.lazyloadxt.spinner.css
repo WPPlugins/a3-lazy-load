@@ -1,4 +1,3 @@
-body .thumbnail_container .thumbnail img.lazy-hidden{}
 .lazy-hidden,.entry img.lazy-hidden, img.thumbnail.lazy-hidden {
 	background-color: #ffffff;
 	background-image: url('loading.gif');

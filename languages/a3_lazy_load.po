@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: a3 Lazy Load\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-12-23 17:37+0700\n"
-"PO-Revision-Date: 2014-12-23 17:37+0700\n"
+"POT-Creation-Date: 2015-01-23 17:36+0700\n"
+"PO-Revision-Date: 2015-01-23 17:36+0700\n"
 "Last-Translator: Nguyen Cong Tuan <mr.nguyencongtuan@gmail.com>\n"
 "Language-Team: a3rev\n"
 "Language: en\n"
@@ -89,25 +89,37 @@ msgstr ""
 
 #: admin/admin-interface.php:1377 admin/admin-interface.php:1467
 #: admin/admin-interface.php:1496
-#: admin/settings/template-settings/global-settings.php:193
-#: admin/settings/template-settings/global-settings.php:210
-#: admin/settings/template-settings/global-settings.php:221
-#: admin/settings/template-settings/global-settings.php:232
-#: admin/settings/template-settings/global-settings.php:243
-#: admin/settings/template-settings/global-settings.php:274
-#: admin/settings/template-settings/global-settings.php:286
+#: admin/settings/template-settings/global-settings.php:198
+#: admin/settings/template-settings/global-settings.php:219
+#: admin/settings/template-settings/global-settings.php:235
+#: admin/settings/template-settings/global-settings.php:245
+#: admin/settings/template-settings/global-settings.php:255
+#: admin/settings/template-settings/global-settings.php:265
+#: admin/settings/template-settings/global-settings.php:283
+#: admin/settings/template-settings/global-settings.php:301
+#: admin/settings/template-settings/global-settings.php:317
+#: admin/settings/template-settings/global-settings.php:327
+#: admin/settings/template-settings/global-settings.php:345
+#: admin/settings/template-settings/global-settings.php:379
+#: admin/settings/template-settings/global-settings.php:390
 msgid "ON"
 msgstr ""
 
 #: admin/admin-interface.php:1378 admin/admin-interface.php:1468
 #: admin/admin-interface.php:1497
-#: admin/settings/template-settings/global-settings.php:194
-#: admin/settings/template-settings/global-settings.php:211
-#: admin/settings/template-settings/global-settings.php:222
-#: admin/settings/template-settings/global-settings.php:233
-#: admin/settings/template-settings/global-settings.php:244
-#: admin/settings/template-settings/global-settings.php:275
-#: admin/settings/template-settings/global-settings.php:287
+#: admin/settings/template-settings/global-settings.php:199
+#: admin/settings/template-settings/global-settings.php:220
+#: admin/settings/template-settings/global-settings.php:236
+#: admin/settings/template-settings/global-settings.php:246
+#: admin/settings/template-settings/global-settings.php:256
+#: admin/settings/template-settings/global-settings.php:266
+#: admin/settings/template-settings/global-settings.php:284
+#: admin/settings/template-settings/global-settings.php:302
+#: admin/settings/template-settings/global-settings.php:318
+#: admin/settings/template-settings/global-settings.php:328
+#: admin/settings/template-settings/global-settings.php:346
+#: admin/settings/template-settings/global-settings.php:380
+#: admin/settings/template-settings/global-settings.php:391
 msgid "OFF"
 msgstr ""
 
@@ -261,89 +273,157 @@ msgstr ""
 msgid "Previously Uploaded"
 msgstr ""
 
-#: admin/settings/template-settings/global-settings.php:139
+#: admin/settings/template-settings/global-settings.php:145
 #: admin/tabs/template-settings/global-settings-tab.php:78
 msgid "Global Settings"
 msgstr ""
 
-#: admin/settings/template-settings/global-settings.php:186
+#: admin/settings/template-settings/global-settings.php:191
 msgid "Enable Lazy Load"
 msgstr ""
 
-#: admin/settings/template-settings/global-settings.php:198
-msgid "Apply For Objects"
+#: admin/settings/template-settings/global-settings.php:208
+msgid "Lazy Load Images"
 msgstr ""
 
-#: admin/settings/template-settings/global-settings.php:204
-msgid "The Content"
+#: admin/settings/template-settings/global-settings.php:213
+msgid "Enable Lazy Load for Images"
 msgstr ""
 
-#: admin/settings/template-settings/global-settings.php:215
-msgid "Widgets"
+#: admin/settings/template-settings/global-settings.php:229
+msgid "Images in Content"
 msgstr ""
 
-#: admin/settings/template-settings/global-settings.php:226
+#: admin/settings/template-settings/global-settings.php:239
+msgid "Images in Widgets"
+msgstr ""
+
+#: admin/settings/template-settings/global-settings.php:249
 msgid "Post Thumbnails"
 msgstr ""
 
-#: admin/settings/template-settings/global-settings.php:237
+#: admin/settings/template-settings/global-settings.php:259
 msgid "Gravatars"
 msgstr ""
 
-#: admin/settings/template-settings/global-settings.php:248
-msgid "Theme Loader Function"
-msgstr ""
-
-#: admin/settings/template-settings/global-settings.php:254
-msgid "HEADER"
-msgstr ""
-
-#: admin/settings/template-settings/global-settings.php:255
-msgid "FOOTER"
-msgstr ""
-
-#: admin/settings/template-settings/global-settings.php:259
+#: admin/settings/template-settings/global-settings.php:269
 msgid "Skip Images Classes"
 msgstr ""
 
-#: admin/settings/template-settings/global-settings.php:261
+#: admin/settings/template-settings/global-settings.php:271
 msgid "Comma separated. Example: \"no-lazy, lazy-ignore, image-235\""
 msgstr ""
 
-#: admin/settings/template-settings/global-settings.php:267
+#: admin/settings/template-settings/global-settings.php:276
+#: admin/settings/template-settings/global-settings.php:338
+msgid "Noscript Support"
+msgstr ""
+
+#: admin/settings/template-settings/global-settings.php:278
+msgid ""
+"Turn ON to activate Noscript tag as a fallback to show images for users who "
+"have JavaScript disabled in their browser."
+msgstr ""
+
+#: admin/settings/template-settings/global-settings.php:289
+msgid "Lazy Load Videos and iframes"
+msgstr ""
+
+#: admin/settings/template-settings/global-settings.php:294
+msgid "Video and iframes"
+msgstr ""
+
+#: admin/settings/template-settings/global-settings.php:295
+#, php-format
+msgid ""
+"Turn ON to activate Lazy Load for <a href=\"%s\" target=\"_blank\">WordPress "
+"Embeds</a>, <a href=\"%s\" target=\"_blank\">HTML5 Video</a> and content "
+"loaded by iframe from all sources. Note: WordPress Shortcode is not "
+"supported."
+msgstr ""
+
+#: admin/settings/template-settings/global-settings.php:311
+msgid "In Content"
+msgstr ""
+
+#: admin/settings/template-settings/global-settings.php:321
+msgid "In Widgets"
+msgstr ""
+
+#: admin/settings/template-settings/global-settings.php:331
+msgid "Skip Videos Classes"
+msgstr ""
+
+#: admin/settings/template-settings/global-settings.php:333
+msgid "Comma separated. Example: \"no-lazy, lazy-ignore, video-235\""
+msgstr ""
+
+#: admin/settings/template-settings/global-settings.php:340
+msgid ""
+"Turn ON to activate Noscript tag as a fallback to show WordPress Embeds, "
+"HTML 5 Video and iframe loaded content for users who have JavaScript "
+"disabled in their browser."
+msgstr ""
+
+#: admin/settings/template-settings/global-settings.php:350
+msgid "Script Load Optimization"
+msgstr ""
+
+#: admin/settings/template-settings/global-settings.php:355
+msgid "Theme Loader Function"
+msgstr ""
+
+#: admin/settings/template-settings/global-settings.php:356
+msgid ""
+"Your theme must have the wp_footer() function if you select FOOTER load."
+msgstr ""
+
+#: admin/settings/template-settings/global-settings.php:362
+msgid "HEADER"
+msgstr ""
+
+#: admin/settings/template-settings/global-settings.php:363
+msgid "FOOTER"
+msgstr ""
+
+#: admin/settings/template-settings/global-settings.php:367
+msgid "WordPress Mobile Template Plugins"
+msgstr ""
+
+#: admin/settings/template-settings/global-settings.php:372
 msgid "Disable On WPTouch"
 msgstr ""
 
-#: admin/settings/template-settings/global-settings.php:268
+#: admin/settings/template-settings/global-settings.php:373
 msgid "Disables a3 Lazy Load when the WPTouch mobile theme is used"
 msgstr ""
 
-#: admin/settings/template-settings/global-settings.php:279
+#: admin/settings/template-settings/global-settings.php:383
 msgid "Disable On MobilePress"
 msgstr ""
 
-#: admin/settings/template-settings/global-settings.php:280
+#: admin/settings/template-settings/global-settings.php:384
 msgid "Disables a3 Lazy Load when the MobilePress mobile theme is used"
 msgstr ""
 
-#: admin/settings/template-settings/global-settings.php:291
+#: admin/settings/template-settings/global-settings.php:395
 msgid "Effect & Style"
 msgstr ""
 
-#: admin/settings/template-settings/global-settings.php:298
-msgid "Effect"
+#: admin/settings/template-settings/global-settings.php:401
+msgid "Loading Effect"
 msgstr ""
 
-#: admin/settings/template-settings/global-settings.php:304
-msgid "FADEIN"
+#: admin/settings/template-settings/global-settings.php:407
+msgid "FADE IN"
 msgstr ""
 
-#: admin/settings/template-settings/global-settings.php:305
+#: admin/settings/template-settings/global-settings.php:408
 msgid "SPINNER"
 msgstr ""
 
-#: admin/settings/template-settings/global-settings.php:309
-msgid "Background Blank Image Colour"
+#: admin/settings/template-settings/global-settings.php:411
+msgid "Loading Background Colour"
 msgstr ""
 
 #: classes/addons/class-a3-lazy-load-addons-page.php:23

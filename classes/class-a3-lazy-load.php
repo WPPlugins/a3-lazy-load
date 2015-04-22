@@ -3,7 +3,8 @@ class A3_Lazy_Load
 {
 	const version = A3_LAZY_VERSION;
 	protected $_placeholder_url;
-	protected $_skip_classes;
+	protected $_skip_images_classes;
+	protected $_skip_videos_classes;
 	protected static $_instance;
 
 	function __construct() {
@@ -15,7 +16,11 @@ class A3_Lazy_Load
 		}
 
 		// Disable when not allow from global settings
-		if ( $a3_lazy_load_global_settings['a3l_apply_to_loadimages'] == false ) {
+		if ( $a3_lazy_load_global_settings['a3l_apply_lazyloadxt'] == false ) {
+			return;
+		}
+
+		if ( $a3_lazy_load_global_settings['a3l_apply_to_images'] == false && $a3_lazy_load_global_settings['a3l_apply_to_videos'] == false ) {
 			return;
 		}
 
@@ -38,33 +43,61 @@ class A3_Lazy_Load
 		}
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ), 11 );
+		add_action( 'wp_print_scripts', array( $this, 'localize_printed_scripts' ), 5 );
+		add_action( 'wp_print_footer_scripts', array( $this, 'localize_printed_scripts' ), 5 );
 
-		add_filter( 'a3_lazy_load_html', array( $this, 'filter' ), 10, 2 );
-		add_filter( 'a3_lazy_load_images', array( $this, 'filter' ), 10, 2 );
-
-		$skip_classes = apply_filters( 'a3_lazy_load_skip_classes', $a3_lazy_load_global_settings['a3l_skip_image_with_class'] );
-		if ( strlen( trim( $skip_classes ) ) ) {
-			$this->_skip_classes = array_map( 'trim', explode( ',', $skip_classes ) );
-		}
-		if ( is_array( $this->_skip_classes ) ) {
-			$this->_skip_classes = array_merge( array('a3-notlazy'), $this->_skip_classes );
-		} else {
-			$this->_skip_classes = array('a3-notlazy');
-		}
+		add_filter( 'a3_lazy_load_html', array( $this, 'filter_html' ), 10, 2 );
 
 		$this->_placeholder_url = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
-		if ( $a3_lazy_load_global_settings['a3l_apply_to_content'] == true ) {
-			add_filter( 'the_content', array( $this, 'filter_content' ), 7 );
+		// Apply for Images
+		$skip_images_classes = apply_filters( 'a3_lazy_load_skip_images_classes', $a3_lazy_load_global_settings['a3l_skip_image_with_class'] );
+		if ( strlen( trim( $skip_images_classes ) ) ) {
+			$this->_skip_images_classes = array_map( 'trim', explode( ',', $skip_images_classes ) );
 		}
-		if ( $a3_lazy_load_global_settings['a3l_apply_to_textwidget'] == true ) {
-			add_filter( 'widget_text', array( $this, 'filter' ), 200 );
+		if ( is_array( $this->_skip_images_classes ) ) {
+			$this->_skip_images_classes = array_merge( array('a3-notlazy'), $this->_skip_images_classes );
+		} else {
+			$this->_skip_images_classes = array('a3-notlazy');
 		}
-		if ( $a3_lazy_load_global_settings['a3l_apply_to_postthumbnails'] == true ) {
-			add_filter( 'post_thumbnail_html', array( $this, 'filter' ), 200 );
+
+		if ( $a3_lazy_load_global_settings['a3l_apply_to_images'] == true ) {
+			add_filter( 'a3_lazy_load_images', array( $this, 'filter_images' ), 10, 2 );
+
+			if ( $a3_lazy_load_global_settings['a3l_apply_image_to_content'] == true ) {
+				add_filter( 'the_content', array( $this, 'filter_content_images' ), 10 );
+			}
+			if ( $a3_lazy_load_global_settings['a3l_apply_image_to_textwidget'] == true ) {
+				add_filter( 'widget_text', array( $this, 'filter_images' ), 200 );
+			}
+			if ( $a3_lazy_load_global_settings['a3l_apply_image_to_postthumbnails'] == true ) {
+				add_filter( 'post_thumbnail_html', array( $this, 'filter_images' ), 200 );
+			}
+			if ( $a3_lazy_load_global_settings['a3l_apply_image_to_gravatars'] == true ) {
+				add_filter( 'get_avatar', array( $this, 'filter_images' ), 200 );
+			}
 		}
-		if ( $a3_lazy_load_global_settings['a3l_apply_to_gravatars'] == true ) {
-			add_filter( 'get_avatar', array( $this, 'filter' ), 200 );
+
+		// Apply for Videos
+		$skip_videos_classes = apply_filters( 'a3_lazy_load_skip_videos_classes', $a3_lazy_load_global_settings['a3l_skip_video_with_class'] );
+		if ( strlen( trim( $skip_videos_classes ) ) ) {
+			$this->_skip_videos_classes = array_map( 'trim', explode( ',', $skip_videos_classes ) );
+		}
+		if ( is_array( $this->_skip_videos_classes ) ) {
+			$this->_skip_videos_classes = array_merge( array('a3-notlazy'), $this->_skip_videos_classes );
+		} else {
+			$this->_skip_videos_classes = array('a3-notlazy');
+		}
+
+		if ( $a3_lazy_load_global_settings['a3l_apply_to_videos'] == true ) {
+			add_filter( 'a3_lazy_load_videos', array( $this, 'filter_videos' ), 10, 2 );
+
+			if ( $a3_lazy_load_global_settings['a3l_apply_video_to_content'] == true ) {
+				add_filter( 'the_content', array( $this, 'filter_videos' ), 10 );
+			}
+			if ( $a3_lazy_load_global_settings['a3l_apply_video_to_textwidget'] == true ) {
+				add_filter( 'widget_text', array( $this, 'filter_videos' ), 200 );
+			}
 		}
 	}
 
@@ -108,6 +141,17 @@ class A3_Lazy_Load
 		do_action('after_a3_lazy_load_xt_script');
 	}
 
+	static function localize_printed_scripts() {
+		global $a3_lazy_load_global_settings;
+
+		if ( wp_script_is( 'jquery-lazyloadxt' ) ) {
+			wp_localize_script( 'jquery-lazyloadxt', 'a3_lazyload_params', apply_filters( 'a3_lazyload_params', array(
+				'apply_images' 	=> $a3_lazy_load_global_settings['a3l_apply_to_images'],
+				'apply_videos'	=> $a3_lazy_load_global_settings['a3l_apply_to_videos']
+			) ) );
+		}
+	}
+
 	static function is_wptouch() {
 		if ( function_exists( 'bnc_wptouch_is_mobile' ) && bnc_wptouch_is_mobile() ) {
 			return true;
@@ -149,28 +193,41 @@ class A3_Lazy_Load
 		return false;
 	}
 
-	static function filter_content( $content ) {
-		$A3_Lazy_Load = A3_Lazy_Load::_instance();
-		add_filter( 'wp_get_attachment_image_attributes', array( $A3_Lazy_Load, 'get_attachment_image_attributes' ), 200 );
-
-		return $A3_Lazy_Load->filter( $content );
-	}
-
-	static function get_attachment_image_attributes( $attr ) {
-		$A3_Lazy_Load = A3_Lazy_Load::_instance();
-
-		$attr['data-src'] = $attr['src'];
-		$attr['src'] = $A3_Lazy_Load->_placeholder_url;
-		$attr['class'] = 'lazy-hidden '. $attr['class'];
-		$attr['data-lazy-type'] = 'image';
-
-		return $attr;
-	}
-
-	static function filter( $content, $noscript = true ) {
-		if( is_admin() ){
+	static function filter_html( $content, $include_noscript = null ) {
+		if ( is_admin() ) {
 			return $content;
 		}
+
+		$run_filter = true;
+		$run_filter = apply_filters( 'a3_lazy_load_run_filter', $run_filter );
+
+		if ( ! $run_filter ) {
+			return $content;
+		}
+
+		global $a3_lazy_load_global_settings;
+
+		$A3_Lazy_Load = A3_Lazy_Load::_instance();
+
+		$content = apply_filters( 'a3_lazy_load_html_before', $content );
+
+		if ( $a3_lazy_load_global_settings['a3l_apply_to_images'] == true ) {
+			$content = $A3_Lazy_Load->filter_images( $content, $include_noscript );
+		}
+		if ( $a3_lazy_load_global_settings['a3l_apply_to_videos'] == true ) {
+			$content = $A3_Lazy_Load->filter_videos( $content, $include_noscript );
+		}
+
+		$content = apply_filters( 'a3_lazy_load_html_after', $content );
+
+		return $content;
+	}
+
+	static function filter_images( $content, $include_noscript = null ) {
+		if ( is_admin() ) {
+			return $content;
+		}
+
 		$run_filter = true;
 		$run_filter = apply_filters( 'a3_lazy_load_run_filter', $run_filter );
 
@@ -184,32 +241,38 @@ class A3_Lazy_Load
 
 		$content = apply_filters( 'a3_lazy_load_images_before', $content );
 
-		$content = $A3_Lazy_Load->_filter_images( $content, $noscript );
+		$content = $A3_Lazy_Load->_filter_images( $content, $include_noscript );
 
 		$content = apply_filters( 'a3_lazy_load_images_after', $content );
 
 		return $content;
 	}
 
-	protected function _filter_images_single( $content ) {
-		// Don't lazyload for feeds, previews, mobile
-		if( is_feed() || is_preview() || ( function_exists( 'is_mobile' ) && is_mobile() ) )
-			return $content;
+	static function filter_content_images( $content ) {
+		$A3_Lazy_Load = A3_Lazy_Load::_instance();
+		add_filter( 'wp_get_attachment_image_attributes', array( $A3_Lazy_Load, 'get_attachment_image_attributes' ), 200 );
 
-		// Don't lazy-load if the content has already been run through previously
-		if ( false !== strpos( $content, 'data-src' ) )
-			return $content;
-
-		// In case you want to change the placeholder image
-		$placeholder_image = $this->_placeholder_url;
-
-		// This is a pretty simple regex, but it works
-		$content = preg_replace( '#<img([^>]+?)src=[\'"]?([^\'"\s>]+)[\'"]?([^>]*)>#', sprintf( '<img${1}src="%s" data-src="${2}"${3}><noscript><img${1}src="${2}"${3}></noscript>', $placeholder_image ), $content );
-
-		return $content;
+		return $A3_Lazy_Load->filter_images( $content );
 	}
 
-	protected function _filter_images( $content, $noscript ) {
+	static function get_attachment_image_attributes( $attr ) {
+		$A3_Lazy_Load = A3_Lazy_Load::_instance();
+
+		$attr['data-src'] = $attr['src'];
+		$attr['src'] = $A3_Lazy_Load->_placeholder_url;
+		$attr['class'] = 'lazy-hidden '. $attr['class'];
+		$attr['data-lazy-type'] = 'image';
+
+		return $attr;
+	}
+
+	protected function _filter_images( $content, $include_noscript = null ) {
+
+		if ( null === $include_noscript ) {
+			global $a3_lazy_load_global_settings;
+
+			$include_noscript = $a3_lazy_load_global_settings['a3l_image_include_noscript'];
+		}
 
 		$matches = array();
 		preg_match_all( '/<img[\s\r\n]+.*?>/is', $content, $matches );
@@ -217,8 +280,8 @@ class A3_Lazy_Load
 		$search = array();
 		$replace = array();
 
-		if ( is_array( $this->_skip_classes ) ) {
-			$skip_images_preg_quoted = array_map( 'preg_quote', $this->_skip_classes );
+		if ( is_array( $this->_skip_images_classes ) ) {
+			$skip_images_preg_quoted = array_map( 'preg_quote', $this->_skip_images_classes );
 			$skip_images_regex = sprintf( '/class=".*(%s).*"/s', implode( '|', $skip_images_preg_quoted ) );
 		}
 
@@ -226,7 +289,7 @@ class A3_Lazy_Load
 		foreach ( $matches[0] as $imgHTML ) {
 
 			// don't to the replacement if a skip class is provided and the image has the class, or if the image is a data-uri
-			if ( ! ( is_array( $this->_skip_classes ) && preg_match( $skip_images_regex, $imgHTML ) ) && ! preg_match( "/src=['\"]data:image/is", $imgHTML ) ) {
+			if ( ! ( is_array( $this->_skip_images_classes ) && preg_match( $skip_images_regex, $imgHTML ) ) && ! preg_match( "/src=['\"]data:image/is", $imgHTML ) ) {
 				$i++;
 				// replace the src and add the data-src attribute
 				$replaceHTML = '';
@@ -239,7 +302,7 @@ class A3_Lazy_Load
 					$replaceHTML = preg_replace( '/<img/is', '<img class="lazy lazy-hidden"', $replaceHTML );
 				}
 
-				if( $noscript ){
+				if ( $include_noscript ) {
 					$replaceHTML .= '<noscript>' . $imgHTML . '</noscript>';
 				}
 
@@ -257,30 +320,177 @@ class A3_Lazy_Load
 		return $content;
 	}
 
-	protected function _filter_iframes( $content ) {
 
+	static function filter_videos( $content, $include_noscript = null ) {
+		if ( is_admin() ) {
+			return $content;
+		}
+
+		$run_filter = true;
+		$run_filter = apply_filters( 'a3_lazy_load_run_filter', $run_filter );
+
+		if ( ! $run_filter ) {
+			return $content;
+		}
+
+		global $a3_lazy_load_global_settings;
+
+		$A3_Lazy_Load = A3_Lazy_Load::_instance();
+
+		$content = apply_filters( 'a3_lazy_load_videos_before', $content );
+
+		$content = $A3_Lazy_Load->_filter_videos( $content, $include_noscript );
+
+		$content = apply_filters( 'a3_lazy_load_videos_after', $content );
+
+		return $content;
+	}
+
+	protected function _filter_videos( $content, $include_noscript = null ) {
+
+		if ( null === $include_noscript ) {
+			global $a3_lazy_load_global_settings;
+
+			$include_noscript = $a3_lazy_load_global_settings['a3l_video_include_noscript'];
+		}
+
+		//iFrame
 		$matches = array();
-		preg_match_all( '/<iframe\s+.*?>/', $content, $matches );
+		preg_match_all( '#<iframe(.*?)></iframe>#is', $content, $matches );
 
 		$search = array();
 		$replace = array();
 
-		foreach ( $matches[0] as $iframeHTML ) {
+		if ( is_array( $this->_skip_videos_classes ) ) {
+			$skip_images_preg_quoted = array_map( 'preg_quote', $this->_skip_videos_classes );
+			$skip_images_regex = sprintf( '/class=".*(%s).*"/s', implode( '|', $skip_images_preg_quoted ) );
+		}
 
-			// Don't mess with the Gravity Forms ajax iframe
-			if ( strpos( $iframeHTML, 'gform_ajax_frame' ) ) {
+		$i = 0;
+		foreach ( $matches[0] as $imgHTML ) {
+			if ( strpos( $imgHTML, 'gform_ajax_frame' ) ) {
 				continue;
 			}
 
-			$replaceHTML = '<img src="' . $this->_placeholder_url . '"  class="lazy lazy-hidden" data-lazy-type="iframe" data-src="' . base64_encode($iframeHTML) . '" alt="">';
+			// don't to the replacement if a skip class is provided and the image has the class, or if the image is a data-uri
+			if ( ! ( is_array( $this->_skip_videos_classes ) && preg_match( $skip_images_regex, $imgHTML ) ) && ! preg_match( "/data-src=['\"]/is", $imgHTML ) ) {
+				$i++;
+				// replace the src and add the data-src attribute
+				$replaceHTML = '';
+				$replaceHTML = preg_replace( '/iframe(.*?)src=/is', 'iframe$1src="' . $this->_placeholder_url . '" data-lazy-type="iframe" data-src=', $imgHTML );
 
-			$replaceHTML .= '<noscript>' . $iframeHTML . '</noscript>';
+				// add the lazy class to the img element
+				if ( preg_match( '/class=["\']/i', $replaceHTML ) ) {
+					$replaceHTML = preg_replace( '/class=(["\'])(.*?)["\']/is', 'class=$1lazy lazy-hidden $2$1', $replaceHTML );
+				} else {
+					$replaceHTML = preg_replace( '/<iframe/is', '<iframe class="lazy lazy-hidden"', $replaceHTML );
+				}
 
-			array_push( $search, $iframeHTML );
-			array_push( $replace, $replaceHTML );
+				if ( $include_noscript ) {
+					$replaceHTML .= '<noscript>' . $imgHTML . '</noscript>';
+				}
+
+				array_push( $search, $imgHTML );
+				array_push( $replace, $replaceHTML );
+			}
 		}
 
+		$search = array_unique( $search );
+		$replace = array_unique( $replace );
+
 		$content = str_replace( $search, $replace, $content );
+
+		//Video
+		$matches = array();
+		preg_match_all( '/<video(.+?)video>/', $content, $matches );
+
+		$search = array();
+		$replace = array();
+
+		if ( is_array( $this->_skip_videos_classes ) ) {
+			$skip_images_preg_quoted = array_map( 'preg_quote', $this->_skip_videos_classes );
+			$skip_images_regex = sprintf( '/class=".*(%s).*"/s', implode( '|', $skip_images_preg_quoted ) );
+		}
+
+		$i = 0;
+		foreach ( $matches[0] as $imgHTML ) {
+
+			// don't to the replacement if a skip class is provided and the image has the class, or if the image is a data-uri
+			if ( ! ( is_array( $this->_skip_videos_classes ) && preg_match( $skip_images_regex, $imgHTML ) ) && ! preg_match( "/data-src=['\"]/is", $imgHTML ) ) {
+				$i++;
+				// replace the src and add the data-src attribute
+
+
+				$replaceHTML = '';
+				$replaceHTML = preg_replace( '/video(.*?)src=/is', 'video$1 data-lazy-type="video" data-src=', $imgHTML );
+				$replaceHTML = preg_replace( '/video(.*?)poster=/is', 'video$1poster="' . $this->_placeholder_url . '" data-lazy-type="video" data-poster=', $replaceHTML );
+
+				// add the lazy class to the img element
+				if ( preg_match( '/class=["\']/i', $replaceHTML ) ) {
+					$replaceHTML = preg_replace( '/class=(["\'])(.*?)["\']/is', 'class=$1lazy lazy-hidden $2$1', $replaceHTML );
+				} else {
+					$replaceHTML = preg_replace( '/<video/is', '<video class="lazy lazy-hidden"', $replaceHTML );
+				}
+
+				if ( $include_noscript ) {
+					$replaceHTML .= '<noscript>' . $imgHTML . '</noscript>';
+				}
+
+				array_push( $search, $imgHTML );
+				array_push( $replace, $replaceHTML );
+			}
+		}
+
+		$search = array_unique( $search );
+		$replace = array_unique( $replace );
+
+		$content = str_replace( $search, $replace, $content );
+
+		//return $content;
+
+		//Embed
+		$matches = array();
+		preg_match_all( '/<embed\s+.*?>/', $content, $matches );
+
+		$search = array();
+		$replace = array();
+
+		if ( is_array( $this->_skip_videos_classes ) ) {
+			$skip_images_preg_quoted = array_map( 'preg_quote', $this->_skip_videos_classes );
+			$skip_images_regex = sprintf( '/class=".*(%s).*"/s', implode( '|', $skip_images_preg_quoted ) );
+		}
+
+		$i = 0;
+		foreach ( $matches[0] as $imgHTML ) {
+
+			// don't to the replacement if a skip class is provided and the image has the class, or if the image is a data-uri
+			if ( ! ( is_array( $this->_skip_videos_classes ) && preg_match( $skip_images_regex, $imgHTML ) ) && ! preg_match( "/data-src=['\"]/is", $imgHTML ) ) {
+				$i++;
+				// replace the src and add the data-src attribute
+				$replaceHTML = '';
+				//$replaceHTML = str_replace("src", 'data-src', $imgHTML);
+				$replaceHTML = preg_replace( '/embed(.*?)src=/is', 'embed$1 data-lazy-type="video" data-src=', $imgHTML );
+				// add the lazy class to the img element
+				if ( preg_match( '/class=["\']/i', $replaceHTML ) ) {
+					$replaceHTML = preg_replace( '/class=(["\'])(.*?)["\']/is', 'class=$1lazy lazy-hidden $2$1', $replaceHTML );
+				} else {
+					$replaceHTML = preg_replace( '/<embed/is', '<embed class="lazy lazy-hidden"', $replaceHTML );
+				}
+
+				if ( $include_noscript ) {
+					$replaceHTML .= '<noscript>' . $imgHTML . '</noscript>';
+				}
+
+				array_push( $search, $imgHTML );
+				array_push( $replace, $replaceHTML );
+			}
+		}
+
+		$search = array_unique( $search );
+		$replace = array_unique( $replace );
+
+		$content = str_replace( $search, $replace, $content );
+
 
 		return $content;
 	}
