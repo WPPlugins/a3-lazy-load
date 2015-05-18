@@ -3,8 +3,8 @@
 Contributors: a3rev, A3 Revolution Software Development team
 Tags: a3 lazy load, Lazy Loading , image lazy load, lazyload
 Requires at least: 4.0
-Tested up to: 4.1.0
-Stable tag: 1.1.0
+Tested up to: 4.2.0
+Stable tag: 1.1.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -144,6 +144,10 @@ Automatic installation is the easiest option as WordPress handles the file trans
 
 == Changelog ==
 
+= 1.1.1 - 2015/04/21 =
+* Tweak - Tested and Tweaked for full compatibility with WordPress Version 4.2.0
+* Tweak - Update style of plugin framework. Removed the [data-icon] selector to prevent conflict with other plugins that have font awesome icons
+
 = 1.1.0 - 2015/01/23 =
 * Feature - Added support for all WordPress video Embeds including Youtube, Vimeo and HTML5 video
 * Feature - Added support for content that is added by iframe from any source in post and page content and widgets
@@ -180,6 +184,9 @@ Automatic installation is the easiest option as WordPress handles the file trans
 
 
 == Upgrade Notice ==
+
+= 1.1.1 =
+Maintenance upgrade. Code tweaks for full compatibility with WordPress 4.2.0 and WooCommerce 2.3.8
 
 = 1.1.0 =
 Major version release. Added support for WordPress Embeds - Youtube, Vimeo, HTML5 video and iframe content from all sources.
