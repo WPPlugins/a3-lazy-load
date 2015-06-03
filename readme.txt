@@ -4,7 +4,7 @@ Contributors: a3rev, A3 Revolution Software Development team
 Tags: a3 lazy load, Lazy Loading , image lazy load, lazyload
 Requires at least: 4.0
 Tested up to: 4.2.2
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -144,6 +144,10 @@ Automatic installation is the easiest option as WordPress handles the file trans
 
 == Changelog ==
 
+= 1.2.1 - 2015/05/26 =
+* Fix - Update url of dynamic stylesheet in uploads folder to the format <code>//domain.com/</code> so it's always is correct when loaded as <code>http</code> or <code>https</code>
+* Credit - Thanks to WordPress member hero12 for bringing the matter [to our attention](https://wordpress.org/support/topic/css-is-not-loaded-properly-on-https?replies=1).
+
 = 1.2.0 - 2015/05/18 =
 * Feature - Added new extend script to support event when click or tap on tab to load images without having to scroll to initiate load.
 * Tweak - Tested and Tweaked for full compatibility with WordPress Version 4.2.2
@@ -190,6 +194,9 @@ Automatic installation is the easiest option as WordPress handles the file trans
 
 
 == Upgrade Notice ==
+
+= 1.2.1 =
+Maintenance Upgrade. 1 bug fix for dynamic stylesheets loaded over secure https protocol.
 
 = 1.2.0 =
 Feature Upgrade. Added support for Lazy Load images in Tabbed content without having to scroll, also a file permissions tweak plus full compatibility with WordPress 4.2.2
