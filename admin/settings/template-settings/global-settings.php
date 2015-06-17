@@ -415,6 +415,19 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
 			),
 
 			array(
+				'name' 		=> __( 'Image Load Threshold', 'a3_lazy_load' ),
+                'type' 		=> 'heading',
+           	),
+			array(
+				'name' 		=> __( 'Threshold', 'a3_lazy_load' ),
+				'id' 		=> 'a3l_edgeY',
+				'desc'		=> 'px ' . __( 'Expands visible page area (viewport) in vertical direction by the amount of pixels set. Elements start to load as soon as the reach the threshold instead of when they reach the actual viewport.', 'a3_lazy_load' ),
+				'type' 		=> 'text',
+				'default'	=> 0,
+				'css'		=> 'width: 80px;'
+			),
+
+			array(
                 'type' 		=> 'heading',
                 'id'		=> 'a3l_container_end'
            	),

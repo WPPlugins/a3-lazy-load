@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: a3 Lazy Load\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-23 17:36+0700\n"
-"PO-Revision-Date: 2015-01-23 17:36+0700\n"
+"POT-Creation-Date: 2015-06-05 17:22+0700\n"
+"PO-Revision-Date: 2015-06-05 17:22+0700\n"
 "Last-Translator: Nguyen Cong Tuan <mr.nguyencongtuan@gmail.com>\n"
 "Language-Team: a3rev\n"
 "Language: en\n"
@@ -424,6 +424,21 @@ msgstr ""
 
 #: admin/settings/template-settings/global-settings.php:411
 msgid "Loading Background Colour"
+msgstr ""
+
+#: admin/settings/template-settings/global-settings.php:418
+msgid "Image Load Threshold"
+msgstr ""
+
+#: admin/settings/template-settings/global-settings.php:422
+msgid "Threshold"
+msgstr ""
+
+#: admin/settings/template-settings/global-settings.php:424
+msgid ""
+"Expands visible page area (viewport) in vertical direction by the amount of "
+"pixels set. Elements start to load as soon as the reach the threshold "
+"instead of when they reach the actual viewport."
 msgstr ""
 
 #: classes/addons/class-a3-lazy-load-addons-page.php:23

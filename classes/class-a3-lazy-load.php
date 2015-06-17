@@ -151,6 +151,12 @@ class A3_Lazy_Load
 				'apply_videos'	=> $a3_lazy_load_global_settings['a3l_apply_to_videos']
 			) ) );
 		}
+
+		if ( wp_script_is( 'jquery-lazyloadxt-extend' ) ) {
+			wp_localize_script( 'jquery-lazyloadxt-extend', 'a3_lazyload_extend_params', apply_filters( 'a3_lazyload_extend_params', array(
+				'edgeY' 	=> (int) $a3_lazy_load_global_settings['a3l_edgeY'],
+			) ) );
+		}
 	}
 
 	static function is_wptouch() {

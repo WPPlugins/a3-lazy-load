@@ -4,7 +4,7 @@ Contributors: a3rev, A3 Revolution Software Development team
 Tags: a3 lazy load, Lazy Loading , image lazy load, lazyload
 Requires at least: 4.0
 Tested up to: 4.2.2
-Stable tag: 1.2.2
+Stable tag: 1.3.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -144,6 +144,10 @@ Automatic installation is the easiest option as WordPress handles the file trans
 
 == Changelog ==
 
+= 1.3.0 - 2015/06/05 =
+* Feature - Added Image Load Threshold with set threshold pixel dynamic setting. Default is 0px
+* Credit - Thanks to [Onisforos and Matt Pain](https://wordpress.org/support/topic/setting-threshold?replies=3) for suggesting and explaining the new Threshold feature
+
 = 1.2.2 - 2015/06/03 =
 * Tweak - Security Hardening. Removed all php file_put_contents functions in the plugin framework and replace with the WP_Filesystem API
 * Tweak - Security Hardening. Removed all php file_get_contents functions in the plugin framework and replace with the WP_Filesystem API
@@ -198,6 +202,9 @@ Automatic installation is the easiest option as WordPress handles the file trans
 
 
 == Upgrade Notice ==
+
+= 1.3.0 =
+Feature Upgrade. New Image Loading Threshold feature. Set threshold in pixel that images will start to load before they reach the viewport.
 
 = 1.2.2 =
 Important Maintenance Upgrade. 2 x major a3rev Plugin Framework Security Hardening Tweaks
