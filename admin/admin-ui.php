@@ -36,8 +36,14 @@ class A3_Lazy_Load_Admin_UI
 
 	public $toggle_box_open_option = 'a3_lz_toggle_box_open';
 
-
 	public $is_free_plugin = true;
+
+	public $version_transient = 'a3_lazy_load_update_info';
+
+	public $plugin_option_key = 'a3rev_lazy_load_plugin';
+
+	public $support_url = 'https://wordpress.org/support/plugin/a3-lazy-load/';
+
 
 	/**
 	 * @var string
@@ -176,7 +182,7 @@ class A3_Lazy_Load_Admin_UI
 			, apply_filters( $this->plugin_name . '_' . $setting_id . '_pro_version_name', apply_filters( $this->plugin_name . '_pro_version_name', __( 'Pro Version', 'a3_lazy_load' ) ) )
 		);
 
-		$upgrade_top_message = apply_filters( $this->plugin_name . '_upgrade_top_message', $upgrade_top_message );
+		$upgrade_top_message = apply_filters( $this->plugin_name . '_upgrade_top_message', $upgrade_top_message, $setting_id );
 
 		if ( $echo ) echo $upgrade_top_message;
 		else return $upgrade_top_message;
@@ -208,6 +214,44 @@ class A3_Lazy_Load_Admin_UI
 		$message = apply_filters( $this->plugin_name . '_blue_message_box', $message );
 
 		return $message;
+	}
+
+	/*-----------------------------------------------------------------------------------*/
+	/* get_version_message() */
+	/* Get new version message, also include error connect
+	/*-----------------------------------------------------------------------------------*/
+	public function get_version_message() {
+		$version_message = '';
+
+		//Getting version number
+		$version_transient = get_transient( $this->version_transient );
+		if ( false !== $version_transient ) {
+			$transient_timeout = '_transient_timeout_' . $this->version_transient;
+			$timeout = get_option( $transient_timeout, false );
+			if ( false === $timeout ) {
+				$version_message = __( 'You should check now to see if have any new version is available', 'a3_lazy_load' );
+			} elseif ( 'cannot_connect_api' == $version_transient ) {
+				$version_message = sprintf( __( 'Connection Failure! Please try again. If this issue persists please create a support request on the plugin <a href="%s" target="_blank">a3rev support forum</a>.', 'a3_lazy_load' ), $this->support_url );
+			} else {
+				$version_info = explode( '||', $version_transient );
+				if ( FALSE !== stristr( $version_transient, '||' )
+					&& is_array( $version_info )
+					&& isset( $version_info[1] ) && $version_info[1] == 'valid'
+					&& version_compare( get_option('a3_lazy_load_version') , $version_info[0], '<' ) ) {
+
+						$version_message = sprintf( __( 'There is a new version <span class="a3rev-ui-new-plugin-version">%s</span> available, <a href="%s" target="_blank">update now</a> or download direct from <a href="%s" target="_blank">My Account</a> on a3rev.com', 'a3_lazy_load' ),
+							$version_info[0],
+							wp_nonce_url( self_admin_url( 'update.php?action=upgrade-plugin&plugin=' . A3_LAZY_LOAD_NAME ), 'upgrade-plugin_' . A3_LAZY_LOAD_NAME ),
+							'https://a3rev.com/my-account/downloads/'
+						);
+				}
+			}
+
+		} else {
+			$version_message = __( 'You should check now to see if have any new version is available', 'a3_lazy_load' );
+		}
+
+		return $version_message;
 	}
 
 }

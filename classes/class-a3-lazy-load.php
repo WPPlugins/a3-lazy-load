@@ -30,7 +30,7 @@ class A3_Lazy_Load
 		}
 
 		// Disable on Opera Mini
-		if ( strpos( $_SERVER['HTTP_USER_AGENT'], 'Opera Mini' ) !== false ) {
+		if ( isset( $_SERVER['HTTP_USER_AGENT'] ) && strpos( $_SERVER['HTTP_USER_AGENT'], 'Opera Mini' ) !== false ) {
 			return;
 		}
 
@@ -48,7 +48,8 @@ class A3_Lazy_Load
 
 		add_filter( 'a3_lazy_load_html', array( $this, 'filter_html' ), 10, 2 );
 
-		$this->_placeholder_url = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+		//$this->_placeholder_url = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+		$this->_placeholder_url = A3_LAZY_LOAD_IMAGES_URL . '/placeholder.gif';
 
 		// Apply for Images
 		$skip_images_classes = apply_filters( 'a3_lazy_load_skip_images_classes', $a3_lazy_load_global_settings['a3l_skip_image_with_class'] );

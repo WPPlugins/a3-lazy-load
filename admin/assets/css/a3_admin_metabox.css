@@ -46,6 +46,7 @@
 .a3-metabox-panel-wrap {
     background: #fff;
     padding-left: 153px;
+    box-sizing: border-box;
 }
 .a3-metabox-wrapper, .a3-metabox-options-panel {
     float: right;

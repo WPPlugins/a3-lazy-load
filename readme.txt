@@ -3,8 +3,8 @@
 Contributors: a3rev, A3 Revolution Software Development team, nguyencongtuan
 Tags: a3 lazy load, Lazy Loading , image lazy load, lazyload
 Requires at least: 4.0
-Tested up to: 4.3
-Stable tag: 1.4.1
+Tested up to: 4.4
+Stable tag: 1.5.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -37,9 +37,9 @@ From the a3 lazy Load admin panel turn Video Support ON | OFF. When ON you can c
 
 * Post and Pages (All Content areas)
 * Widgets (Sidebar, header and footer)
-
 * Youtube [see demo](http://ressio.github.io/lazy-load-xt/demo/youtube-iframe.htm)
 * Video [see demo](http://ressio.github.io/lazy-load-xt/demo/video-html5.htm)
+* Fully Compatible with the popular [Youtube Embed Plugin](https://wordpress.org/plugins/youtube-embed/)
 
 = Elements loaded by iframe =
 
@@ -144,6 +144,16 @@ Automatic installation is the easiest option as WordPress handles the file trans
 
 == Changelog ==
 
+= 1.5.0 - 2015/12/10 =
+* Feature - Change media uploader to New UI of WordPress media uploader with WordPress Backbone and Underscore
+* Feature - Apply Lazy Load for new Embed Post feature on WordPress 4.4
+* Tweak - Update the uploader script to save the Attachment ID and work with New Uploader
+* Tweak - Updated a3 Plugin Framework to the latest version
+* Tweak - Full compatibility with Responsive Image feature on WordPress 4.4
+* Tweak - Change the PlaceHolder image from data image to real image placeholder.gif for fix display on IE
+* Tweak - Tested for full compatibility with WordPress major version 4.4
+* Fix - Check if 'HTTP_USER_AGENT' is defined before call it from strpos
+
 = 1.4.1 - 2015/08/22 =
 * Tweak - include new CSSMin lib from https://github.com/tubalmartin/YUI-CSS-compressor-PHP-port into plugin framework instead of old CSSMin lib from http://code.google.com/p/cssmin/ , to avoid conflict with plugins or themes that have CSSMin lib
 * Tweak - make __construct() function for 'Compile_Less_Sass' class instead of using a method with the same name as the class for compatibility on WP 4.3 and is deprecated on PHP4
@@ -224,6 +234,9 @@ Automatic installation is the easiest option as WordPress handles the file trans
 
 
 == Upgrade Notice ==
+
+= 1.5.0 =
+Feature Upgrade. 2 new features plus 1 bug fix and tweaks for full compatibility with WordPress major Version 4.4
 
 = 1.4.1 =
 Major Maintenance Upgrade. 5 Code Tweaks plus 2 bug fixes for full compatibility with WordPress v 4.3.0

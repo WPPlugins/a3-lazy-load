@@ -16,14 +16,15 @@ class A3_Lazy_Load_Less
     public function __construct()
     {
 		add_action( $this->plugin_name.'_after_settings_save_reset', array ($this, 'plugin_build_sass') );
-		add_action( 'wp_head', array ($this, 'apply_style_css_fontend') , 9 );
+		add_action( 'wp_enqueue_scripts', array ($this, 'apply_style_css_fontend') , 12 );
     }
 
 	public function apply_style_css_fontend()
 	{
 		$_upload_dir = wp_upload_dir();
-		if ( file_exists( $_upload_dir['basedir'] . '/sass/' . $this->css_file_name . '.min.css' ) )
-			echo '<link media="screen" type="text/css" href="' . str_replace(array('http:','https:'), '', $_upload_dir['baseurl'] ) . '/sass/' . $this->css_file_name . '.min.css" rel="stylesheet" />' . "\n";
+		if ( file_exists( $_upload_dir['basedir'] . '/sass/' . $this->css_file_name . '.min.css' ) ) {
+			wp_enqueue_style( 'a3' . $this->css_file_name, str_replace( array('http:','https:'), '', $_upload_dir['baseurl'] ) . '/sass/' . $this->css_file_name . '.min.css', array() );
+        }
 	}
 
 	public function plugin_build_sass()
