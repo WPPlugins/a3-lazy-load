@@ -4,7 +4,7 @@ Contributors: a3rev, A3 Revolution Software Development team, nguyencongtuan
 Tags: a3 lazy load, Lazy Loading , image lazy load, lazyload
 Requires at least: 4.0
 Tested up to: 4.4
-Stable tag: 1.5.0
+Stable tag: 1.5.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -49,6 +49,11 @@ a3 Lazy Load has built in support for content that is added by iframe from any s
 * Facebook Like boxes with profiles, Like buttons, Recommend
 * Google+ Profile
 * Google Maps
+
+= WordPress 4.4 Post Embed =
+
+* Fully compatible with WordPress 4.4 new embed post on any site feature
+* Makes embed post load much faster
 
 = Lazy Load Effects =
 
@@ -144,6 +149,11 @@ Automatic installation is the easiest option as WordPress handles the file trans
 
 == Changelog ==
 
+= 1.5.1 - 2015/12/11 =
+* Tweak - Change the placeholder image name from 'placeholder.gif' to 'lazy_placeholder.gif' to avoid conflict if thumb image has name like placehoder.gif
+* Tweak - Change pattern parameter from "/data-src=['\"]/is" to "/ data-src=['\"]/is" to check 'data-src' exists as attribute of video, image, iframe, Solve the issue when 3rd party script adds attribute with format of name '***-data-src' to html tag.
+* Fix - Use preg_match( "/src=.*lazy_placeholder.gif['\"]/s", $imgHTML ) On themes that have loop code was causing loading of the placeholder instead of the image
+
 = 1.5.0 - 2015/12/10 =
 * Feature - Change media uploader to New UI of WordPress media uploader with WordPress Backbone and Underscore
 * Feature - Apply Lazy Load for new Embed Post feature on WordPress 4.4
@@ -234,6 +244,9 @@ Automatic installation is the easiest option as WordPress handles the file trans
 
 
 == Upgrade Notice ==
+
+= 1.5.1 =
+Maintenance Update. 2 Tweaks and 1 bug fix for themes that use loop code, or where 3rd party scripts add name to property attributes
 
 = 1.5.0 =
 Feature Upgrade. 2 new features plus 1 bug fix and tweaks for full compatibility with WordPress major Version 4.4
