@@ -23,7 +23,7 @@ class A3_Lazy_Load_Less
 	{
 		$_upload_dir = wp_upload_dir();
 		if ( file_exists( $_upload_dir['basedir'] . '/sass/' . $this->css_file_name . '.min.css' ) ) {
-			wp_enqueue_style( 'a3' . $this->css_file_name, str_replace( array('http:','https:'), '', $_upload_dir['baseurl'] ) . '/sass/' . $this->css_file_name . '.min.css', array() );
+			wp_enqueue_style( 'a3' . $this->css_file_name, str_replace( array('http:','https:'), '', $_upload_dir['baseurl'] ) . '/sass/' . $this->css_file_name . '.min.css', array(), A3_LAZY_VERSION );
         }
 	}
 

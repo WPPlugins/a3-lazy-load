@@ -2,7 +2,7 @@
 /*
 Plugin Name: a3 Lazy Load
 Description: Speed up your site and enhance frontend user's visual experience in PC's, Tablets and mobile with a3 Lazy Load.
-Version: 1.5.1
+Version: 1.5.2
 Author: a3 Revolution
 Author URI: http://www.a3rev.com/
 Requires at least: 3.8
@@ -17,7 +17,7 @@ License: GPLv2 or later
 */
 ?>
 <?php
-define('A3_LAZY_VERSION', '1.2.1');
+define('A3_LAZY_VERSION', '1.5.2');
 define('A3_LAZY_LOAD_FILE_PATH', dirname(__FILE__));
 define('A3_LAZY_LOAD_DIR_NAME', basename(A3_LAZY_LOAD_FILE_PATH));
 define('A3_LAZY_LOAD_FOLDER', dirname(plugin_basename(__FILE__)));

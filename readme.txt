@@ -4,7 +4,7 @@ Contributors: a3rev, A3 Revolution Software Development team, nguyencongtuan
 Tags: a3 lazy load, Lazy Loading , image lazy load, lazyload
 Requires at least: 4.0
 Tested up to: 4.4
-Stable tag: 1.5.1
+Stable tag: 1.5.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -149,6 +149,12 @@ Automatic installation is the easiest option as WordPress handles the file trans
 
 == Changelog ==
 
+= 1.5.2 - 2015/12/24 =
+* Tweak - Change on enqueue styles and scripts for faster load
+* Tweak - Register new script 'jquery-lazyloadxt-srcset' for enqueue when lazyload script is called , full support for WP 4.4 Responsive Images
+* Fix - Filter for change the 'srcset' attribute name to 'data-srcset' name to prevent browsers loading the image while page is loading
+* Fix - Create a new script for when image comes into view port that it changes 'data-srcset' to 'srcset' so image is loaded then by lazy load
+
 = 1.5.1 - 2015/12/11 =
 * Tweak - Change the placeholder image name from 'placeholder.gif' to 'lazy_placeholder.gif' to avoid conflict if thumb image has name like placehoder.gif
 * Tweak - Change pattern parameter from "/data-src=['\"]/is" to "/ data-src=['\"]/is" to check 'data-src' exists as attribute of video, image, iframe, Solve the issue when 3rd party script adds attribute with format of name '***-data-src' to html tag.
@@ -244,6 +250,9 @@ Automatic installation is the easiest option as WordPress handles the file trans
 
 
 == Upgrade Notice ==
+
+= 1.5.2 =
+Maintenance Update. 2 code tweaks and 2 bug fixes to correct lazy load not showing WordPress v 4.4 Responsive Images in legacy and mobile browsers, should flush the cached if site have installed cache plugin
 
 = 1.5.1 =
 Maintenance Update. 2 Tweaks and 1 bug fix for themes that use loop code, or where 3rd party scripts add name to property attributes
