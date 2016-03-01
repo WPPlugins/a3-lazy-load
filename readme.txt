@@ -3,8 +3,8 @@
 Contributors: a3rev, A3 Revolution Software Development team, nguyencongtuan
 Tags: a3 lazy load, Lazy Loading , image lazy load, lazyload
 Requires at least: 4.0
-Tested up to: 4.4
-Stable tag: 1.5.2
+Tested up to: 4.4.1
+Stable tag: 1.6.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -149,6 +149,12 @@ Automatic installation is the easiest option as WordPress handles the file trans
 
 == Changelog ==
 
+= 1.6.0 - 2016/01/22 =
+* Feature - Add support for Lazy loading images, video or iframe inside content that is loaded by AJAX
+* Tweak - Full support for loading Product Thumbnails within the WooCommerce cart widget
+* Tweak - Tested for full compatibility with WordPress version 4.4.1
+* Tweak - Tested for full compatibility with WooCommerce version 2.5
+
 = 1.5.2 - 2015/12/24 =
 * Tweak - Change on enqueue styles and scripts for faster load
 * Tweak - Register new script 'jquery-lazyloadxt-srcset' for enqueue when lazyload script is called , full support for WP 4.4 Responsive Images
@@ -250,6 +256,9 @@ Automatic installation is the easiest option as WordPress handles the file trans
 
 
 == Upgrade Notice ==
+
+= 1.6.0 =
+Feature Upgrade. 1 New Feature. Now support Lazy Loading elements within content that is loaded by AJAX plus full compat with WordPress v4.4.1 and WooCommerce v2.5 - be sure to clear caches, CDNs etc
 
 = 1.5.2 =
 Maintenance Update. 2 code tweaks and 2 bug fixes to correct lazy load not showing WordPress v 4.4 Responsive Images in legacy and mobile browsers, should flush the cached if site have installed cache plugin
