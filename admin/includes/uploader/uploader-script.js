@@ -47,10 +47,12 @@ a3Uploader = {
 				}, wp.media.controller.Library.prototype.defaults )
 			});
 
+			/*
 			if ( file_frame ) {
 				file_frame.open();
 				return;
 			}
+			*/
 
 			file_frame = wp.media.frames.file_frame = wp.media({
 				title: 'Select Image',
@@ -86,7 +88,12 @@ a3Uploader = {
 					html = '<a href="'+attachment.url+'" target="_blank" rel="a3_external">View File</a>';
 					btnContent = '<div class="a3_no_image"><span class="a3_file_link">'+html+'</span><a href="#" class="a3_uploader_remove a3-plugin-ui-delete-icon">&nbsp;</a></div>';
 				}
-				$( '#' + formfield).val(attachment.url.replace(/http:|https:/, '' )).trigger('change');
+				var strip_methods = $( '#' + formfield).data('strip-methods');
+				if ( strip_methods === 0 ) {
+					$( '#' + formfield).val(attachment.url).trigger('change');
+				} else {
+					$( '#' + formfield).val(attachment.url.replace(/http:|https:/, '' )).trigger('change');
+				}
 				$( '#' + formfield + '_attachment_id').val(attachment.id);
 				$( '#' + formfield).siblings( '.a3_screenshot').slideDown().html(btnContent);
 				$('.media-modal-close').trigger('click');

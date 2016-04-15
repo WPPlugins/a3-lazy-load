@@ -99,6 +99,91 @@ class A3_Lazy_Load_Admin_UI
 		return (array)$admin_pages;
 	}
 
+	/**
+	 * get_premium_video_data()
+	 * return array
+	 * Data is used for Premium Video Box
+	 */
+	public function get_premium_video_data() {
+		$premium_video_data = array(
+				'box_title'    => __( 'Premium Version Enhanced Features', 'a3_lazy_load' ),
+				'image_url'    => A3_LAZY_LOAD_IMAGES_URL. '/video.jpg',
+				'video_url'    => 'https://www.youtube.com/embed/9dGw-ORfMIk?version=3&autoplay=1',
+				'left_title'   => __( 'Premium Version Enhanced Features', 'a3_lazy_load' ),
+				'left_text'    => __( 'WooCommerce Dynamic Gallery Premium', 'a3_lazy_load' )
+									. "\n\n" . __( 'Quick Video showing the main (not all) enhanced features that are built into the WooCommerce Dynamic Gallery Premium version', 'a3_lazy_load' ),
+				'right_title'  => __( 'Developer Support and Premium Features', 'a3_lazy_load' ),
+				'right_text'   => __( 'Limited Time Offer. Purchase the Premium Version Lifetime License. That is a Lifetime of maintenance updates, feature upgrades and developer support for a once only fee. Offer ending soon.', 'a3_lazy_load' )
+									. "\n\n" . '<a target="_blank" href="'.$this->pro_plugin_page_url.'" class="button-primary">' . __( 'Get Premium Features and Support', '' ) . '</a>',
+			);
+
+		return $premium_video_data;
+	}
+
+	public function plugin_premium_video_box( $echo = true ) {
+		$premium_video_data = apply_filters( $this->plugin_name . '_plugin_premium_video_data', $this->get_premium_video_data() );
+
+		$output = '<div id="a3_plugin_premium_video_container">';
+		$output .= '<div class="a3rev_panel_container">';
+		$output .= '<div class="a3rev_panel_box">';
+		$output .= '<div class="a3rev_panel_box_handle">';
+		$output .= '<h3 class="a3-plugin-ui-panel-box">'.$premium_video_data['box_title'].'</h3>';
+		$output .= '</div>';
+		$output .= '<div class="a3rev_panel_video_box">';
+		$output .= $this->plugin_premium_video();
+		$output .= $this->plugin_premium_video_text();
+		$output .= '</div>';
+		$output .= '</div>';
+		$output .= '</div>';
+		$output .= '</div>';
+
+		$output = apply_filters( $this->plugin_name . '_plugin_premium_video', $output );
+
+		if ( $echo )
+			echo $output;
+		else
+			return $output;
+	}
+
+	public function plugin_premium_video( $echo = false ) {
+		$premium_video_data = apply_filters( $this->plugin_name . '_plugin_premium_video_data', $this->get_premium_video_data() );
+
+		wp_enqueue_style('thickbox');
+		wp_enqueue_script('thickbox');
+
+		$output = '<div class="a3rev_panel_box_left_inside">';
+		$output .= '<h2>' . $premium_video_data['left_title'] . '</h2>';
+		$output .= '<a class="a3-plugin-premium-image thickbox" title="'.esc_attr( $premium_video_data['left_title'] ).'" href="'.esc_url( add_query_arg( array( 'TB_iframe' => 'true', 'width' => 640, 'height' => 360 ), $premium_video_data['video_url'] )  ).'">';
+		$output .= '<img src="'.esc_url( $premium_video_data['image_url'] ).'" />';
+		$output .= '<div class="a3-plugin-premium-video-play"></div>';
+		$output .= '</a>';
+		$output .= wpautop( $premium_video_data['left_text'] );
+		$output .= '</div>';
+
+		if ( $echo )
+			echo $output;
+		else
+			return $output;
+	}
+
+	public function plugin_premium_video_text( $echo = false ) {
+		$premium_video_data = apply_filters( $this->plugin_name . '_plugin_premium_video_data', $this->get_premium_video_data() );
+
+		$output = '';
+		if ( '' != trim( $premium_video_data['right_text'] ) ) {
+			$output .= '<div class="a3rev_panel_box_separate"></div>';
+			$output .= '<div class="a3rev_panel_box_right_inside">';
+			$output .= '<h2>' . $premium_video_data['right_title'] . '</h2>';
+			$output .= wpautop( $premium_video_data['right_text'] );
+			$output .= '</div>';
+		}
+
+		if ( $echo )
+			echo $output;
+		else
+			return $output;
+	}
+
 	public function plugin_extension_boxes( $echo = false ) {
 
 		/**

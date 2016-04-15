@@ -52,6 +52,22 @@
 			});
 		});
 
+		/* Apply Background Color */
+		$('.a3rev_panel_container input.a3rev-ui-bg_color-enable').each(function(i){
+			if ( $(this).is(':checked') ) {
+				$(this).parent('.forminp-bg_color').find('.a3rev-ui-bg_color-enable-container').css( {'visibility': 'visible', 'height' : 'auto', 'overflow' : 'inherit'} );
+			} else {
+				$(this).parent('.forminp-bg_color').find('.a3rev-ui-bg_color-enable-container').css( {'visibility': 'hidden', 'height' : '0px', 'overflow' : 'hidden'} );
+			}
+			$(this).on( "a3rev-ui-onoff_checkbox-switch", function( event, value, status ) {
+				if ( status == 'true') {
+					$(this).parents('.forminp-bg_color').find('.a3rev-ui-bg_color-enable-container').hide().css( {'visibility': 'visible', 'height' : 'auto', 'overflow' : 'inherit'} ).slideDown();
+				} else {
+					$(this).parents('.forminp-bg_color').find('.a3rev-ui-bg_color-enable-container').show().css( {'visibility': 'hidden', 'height' : '0px', 'overflow' : 'hidden'} ).slideUp();
+				}
+			});
+		});
+
 		/* Apply OnOff Checbox */
 		$('.a3rev_panel_container input.a3rev-ui-onoff_checkbox').each(function(i){
 			var checked_label = 'ON';

@@ -2,7 +2,7 @@
 update_option('a3rev_lazy_load_plugin', 'a3_lazy_load');
 
 function a3_lazy_load_activated(){
-	update_option('a3_lazy_load_version', '1.6.0');
+	update_option('a3_lazy_load_version', '1.7.0');
 
 	// Set Settings Default from Admin Init
 	global $a3_lazy_load_admin_init;
@@ -59,6 +59,12 @@ function a3_lazy_load_upgrade_plugin() {
     	include( A3_LAZY_LOAD_DIR. '/includes/updates/a3-lazy-load-update-1.1.0.php' );
     }
 
-    update_option('a3_lazy_load_version', '1.6.0');
+    // Upgrade to 1.7.0
+	if ( version_compare(get_option('a3_lazy_load_version'), '1.7.0') === -1 ) {
+		update_option('a3_lazy_load_version', '1.7.0');
+		update_option('a3_lazy_load_style_version', time() );
+	}
+
+    update_option('a3_lazy_load_version', '1.7.0');
 }
 ?>

@@ -728,6 +728,10 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 					// Just for Color type
 					if ( 'color' == $value['type'] && '' == trim( $option_value ) ) {
 						$option_value = 'transparent';
+					}
+					// Just for Background Color type
+					elseif ( 'bg_color' == $value['type'] && '' == trim( $option_value['color'] ) ) {
+						$option_value['color'] = 'transparent';
 					} elseif ( 'upload' == $value['type'] ) {
 						// Uploader: Set key and value for attachment id of upload type
 						if ( strstr( $value['id'], '[' ) ) {
@@ -1081,7 +1085,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 	 * @return void
 	 * ========================================================================
 	 * Option Array Structure :
-	 * type					=> heading | google_api_key | onoff_toggle_box | text | email | number | password | color | textarea | select | multiselect | radio | onoff_radio | checkbox | onoff_checkbox 
+	 * type					=> heading | google_api_key | onoff_toggle_box | text | email | number | password | color | bg_color | textarea | select | multiselect | radio | onoff_radio | checkbox | onoff_checkbox 
 	 *						   | switcher_checkbox | image_size | single_select_page | typography | border | border_styles | border_corner | box_shadow 
 	 *						   | slider | upload | wp_editor | array_textfields | 
 	 *
@@ -1091,6 +1095,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 	 * class				=> text
 	 * css					=> text
 	 * default				=> text : apply for other types
+	 * 						   array( 'enable' => 1, 'color' => '#515151' ) : apply bg_color only
 	 *						   array( 'width' => '125', 'height' => '125', 'crop' => 1 ) : apply image_size only
 	 *						   array( 'size' => '9px', 'face' => 'Arial', 'style' => 'normal', 'color' => '#515151' ) : apply for typography only 
 	 *						   array( 'width' => '1px', 'style' => 'normal', 'color' => '#515151', 'corner' => 'rounded' | 'square' , 'top_left_corner' => 3, 
@@ -1153,6 +1158,8 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 	 *										'default'	=> '10px' ),
 	 *							)
 	 *							---------------------------------------------
+	 *
+	 * strip_methods		=> true | false : apply for upload type only
 	 *
 	 */
 	 
@@ -1338,6 +1345,12 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 				$description = str_replace( '[default_value_blur]', $value['default']['blur'], $description );
 				$description = str_replace( '[default_value_spread]', $value['default']['spread'], $description );
 				
+			} elseif ( $value['type'] == 'bg_color' ) {
+				if ( ! is_array( $value['default'] ) ) $value['default'] = array();
+				if ( ! isset( $value['default']['enable'] ) || trim( $value['default']['enable'] ) == '' ) $value['default']['enable'] = 0;
+				if ( ! isset( $value['default']['color'] ) || trim( $value['default']['color'] ) == '' ) $value['default']['color'] = '#515151';
+
+				$description = str_replace( '[default_value_color]', $value['default']['color'], $description );
 			} elseif ( $value['type'] != 'multiselect' ) {
 				$description = str_replace( '[default_value]', $value['default'], $description );
 			}
@@ -1697,12 +1710,57 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 								/> <?php echo $description; ?>
 						</td>
 					</tr><?php
-					
+
 				break;
-	
+
+				// Background Color
+				case 'bg_color' :
+
+					if ( ! isset( $option_value['enable'] ) ) $option_value['enable'] = 0;
+					$enable		= $option_value['enable'];
+
+					if ( trim( $value['default']['color'] ) == '' ) $value['default']['color'] = '#515151';
+					$default_color = ' data-default-color="' . esc_attr( $value['default']['color'] ) . '"';
+
+					$color = $option_value['color'];
+					if ( '' == trim( $color ) ) $color = 'transparent';
+
+					?><tr valign="top">
+						<th scope="row" class="titledesc">
+							<?php echo $tip; ?>
+							<label for="<?php echo $id_attribute; ?>"><?php echo esc_html( $value['name'] ); ?></label>
+						</th>
+						<td class="forminp forminp-<?php echo sanitize_title( $value['type'] ) ?>">
+							<input
+									name="<?php echo $name_attribute; ?>[enable]"
+									id="<?php echo $id_attribute; ?>"
+									class="a3rev-ui-bg_color-enable a3rev-ui-onoff_checkbox <?php echo esc_attr( $value['class'] ); ?>"
+									checked_label="<?php _e( 'ON', 'a3_lazy_load' ); ?>"
+									unchecked_label="<?php _e( 'OFF', 'a3_lazy_load' ); ?>"
+									type="checkbox"
+									value="1"
+									<?php checked( 1, $enable ); ?>
+									<?php echo implode( ' ', $custom_attributes ); ?>
+								/> <?php echo $description; ?>
+							<div style="clear:both;"></div>
+							<div class="a3rev-ui-bg_color-enable-container">
+							<input
+								name="<?php echo $name_attribute; ?>[color]"
+								id="<?php echo $id_attribute; ?>-color"
+								type="text"
+								value="<?php echo esc_attr( $color ); ?>"
+								class="a3rev-color-picker"
+								<?php echo $default_color; ?>
+								/>
+							</div>
+						</td>
+					</tr><?php
+
+				break;
+
 				// Textarea
 				case 'textarea':
-	
+
 					?><tr valign="top">
 						<th scope="row" class="titledesc">
                         	<?php echo $tip; ?>
@@ -2724,6 +2782,11 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 				
 					$class = 'a3rev-ui-' . sanitize_title( $value['type'] ) . ' ' . esc_attr( $value['class'] );
 
+					$strip_methods = true;
+					if ( isset( $value['strip_methods'] ) ) {
+						$strip_methods = $value['strip_methods'];
+					}
+
 					if ( strstr( $name_attribute, ']' ) ) {
 						$attachment_id_name_attribute = substr_replace( $name_attribute, '_attachment_id', -1, 0 );
 					} else {
@@ -2738,7 +2801,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 						</th>
 						<td class="forminp forminp-<?php echo sanitize_title( $value['type'] ) ?>">
                         	<?php echo $description; ?>
-                        	<?php echo $a3_lazy_load_uploader->upload_input( $name_attribute, $id_attribute, $option_value, $attachment_id, $value['default'], esc_html( $value['name'] ), $class, esc_attr( $value['css'] ) , '' );?>
+                        	<?php echo $a3_lazy_load_uploader->upload_input( $name_attribute, $id_attribute, $option_value, $attachment_id, $value['default'], esc_html( $value['name'] ), $class, esc_attr( $value['css'] ) , '', $strip_methods );?>
 						</td>
 					</tr><?php
 									
@@ -3078,7 +3141,40 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 		
 		return $values;
 	}
-	
+
+	/*-----------------------------------------------------------------------------------*/
+	/* hextorgb() */
+	/* Convert Hex to RGB for color */
+	/*-----------------------------------------------------------------------------------*/
+	public function hextorgb( $color = '', $text = true ) {
+		$color = trim( $color );
+		if ( '' == $color || 'transparent' == $color ) {
+			return false;
+		}
+
+		if ( '#' == $color[0] ) {
+			$color = substr( $color, 1 );
+		}
+
+		if ( 6 == strlen( $color ) ) {
+			list( $r, $g, $b ) = array( $color[0].$color[1], $color[2].$color[3], $color[4].$color[5] );
+		} elseif ( 3 == strlen( $color ) ) {
+			list( $r, $g, $b ) = array( $color[0].$color[0], $color[1].$color[1], $color[2].$color[2] );
+		} else {
+			return false;
+		}
+
+		$r = hexdec($r);
+		$g = hexdec($g);
+		$b = hexdec($b);
+
+		if ( $text ) {
+			return $r.','.$g.','.$b;
+		} else {
+			return array( $r, $g, $b );
+		}
+	}
+
 	/*-----------------------------------------------------------------------------------*/
 	/* generate_border_css() */
 	/* Generate Border CSS on frontend */
@@ -3174,6 +3270,32 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 		
 	}
 
+	/*-----------------------------------------------------------------------------------*/
+	/* generate_background_css() */
+	/* Generate Background Color CSS on frontend */
+	/*-----------------------------------------------------------------------------------*/
+	public function generate_background_color_css( $option, $transparency = 100 ) {
+
+		$return_css = '';
+
+		if ( isset( $option['enable'] ) && $option['enable'] == 1 ) {
+			$color = $option['color'];
+			if ( 100 != $transparency ) {
+				$color = $this->hextorgb( $color );
+				$transparency = (int) $transparency / 100;
+
+				if ( $color !== false ) {
+					$return_css .= 'background-color: rgba( ' . $color . ', ' . $transparency . ' ) !important;';
+				} else {
+					$return_css .= 'background-color: transparent !important ;';
+				}
+			} else {
+				$return_css .= 'background-color: ' . $color . ' !important ;';
+			}
+		} else {
+			$return_css .= 'background-color: transparent !important ;';
+		}
+	}
 }
 
 global $a3_lazy_load_admin_interface;

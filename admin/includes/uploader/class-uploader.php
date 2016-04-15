@@ -79,7 +79,7 @@ class A3_Lazy_Load_Uploader extends A3_Lazy_Load_Admin_UI
 	/*-----------------------------------------------------------------------------------*/
 	/* Get Upload Input Field */
 	/*-----------------------------------------------------------------------------------*/
-	public function upload_input ( $name_attribute, $id_attribute = '', $value = '', $attachment_id = 0, $default_value = '', $field_name = '', $class = '', $css = '', $description = '' ) {
+	public function upload_input ( $name_attribute, $id_attribute = '', $value = '', $attachment_id = 0, $default_value = '', $field_name = '', $class = '', $css = '', $description = '', $strip_methods = true ) {
 		$output = '';
 
 		if ( trim( $value ) == '' ) $value = trim( $default_value );
@@ -90,8 +90,14 @@ class A3_Lazy_Load_Uploader extends A3_Lazy_Load_Admin_UI
 			$attachment_id_name_attribute = $name_attribute.'_attachment_id';
 		}
 
+		if ( $strip_methods === false ) {
+			$strip_methods = 0;
+		} else {
+			$strip_methods = 1;
+		}
+
 		$output .= '<input type="hidden" name="'.$attachment_id_name_attribute.'" id="'.$id_attribute.'_attachment_id" value="'.$attachment_id.'" class=" a3_upload_attachment_id" />';
-		$output .= '<input type="text" name="'.$name_attribute.'" id="'.$id_attribute.'" value="'.esc_attr( $value ).'" class="'.$id_attribute. ' ' .$class.' a3_upload" style="'.$css.'" rel="'.$field_name.'" /> ';
+		$output .= '<input data-strip-methods="'.$strip_methods.'" type="text" name="'.$name_attribute.'" id="'.$id_attribute.'" value="'.esc_attr( $value ).'" class="'.$id_attribute. ' ' .$class.' a3_upload" style="'.$css.'" rel="'.$field_name.'" /> ';
 		$output .= '<input id="upload_'.$id_attribute.'" class="a3rev-ui-upload-button a3_upload_button button" type="button" value="'.__( 'Upload', 'a3_lazy_load' ).'" /> '.$description;
 		
 		$output .= '<div style="clear:both;"></div><div class="a3_screenshot" id="'.$id_attribute.'_image" style="'.( ( $value == '' ) ? 'display:none;' : 'display:block;' ).'">';

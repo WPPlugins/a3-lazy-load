@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: a3 Lazy Load\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-12-10 12:29+0700\n"
-"PO-Revision-Date: 2015-12-10 12:29+0700\n"
+"POT-Creation-Date: 2016-03-01 15:57+0700\n"
+"PO-Revision-Date: 2016-03-01 15:58+0700\n"
 "Last-Translator: Nguyen Cong Tuan <mr.nguyencongtuan@gmail.com>\n"
 "Language-Team: a3rev\n"
 "Language: en\n"
@@ -91,9 +91,9 @@ msgstr ""
 msgid "Outset"
 msgstr ""
 
-#: admin/admin-interface.php:1539 admin/admin-interface.php:1625
-#: admin/admin-interface.php:1828 admin/admin-interface.php:1918
-#: admin/admin-interface.php:1947
+#: admin/admin-interface.php:1552 admin/admin-interface.php:1638
+#: admin/admin-interface.php:1738 admin/admin-interface.php:1886
+#: admin/admin-interface.php:1976 admin/admin-interface.php:2005
 #: admin/settings/template-settings/global-settings.php:224
 #: admin/settings/template-settings/global-settings.php:242
 #: admin/settings/template-settings/global-settings.php:261
@@ -111,9 +111,9 @@ msgstr ""
 msgid "ON"
 msgstr ""
 
-#: admin/admin-interface.php:1540 admin/admin-interface.php:1626
-#: admin/admin-interface.php:1829 admin/admin-interface.php:1919
-#: admin/admin-interface.php:1948
+#: admin/admin-interface.php:1553 admin/admin-interface.php:1639
+#: admin/admin-interface.php:1739 admin/admin-interface.php:1887
+#: admin/admin-interface.php:1977 admin/admin-interface.php:2006
 #: admin/settings/template-settings/global-settings.php:225
 #: admin/settings/template-settings/global-settings.php:243
 #: admin/settings/template-settings/global-settings.php:262
@@ -131,150 +131,150 @@ msgstr ""
 msgid "OFF"
 msgstr ""
 
-#: admin/admin-interface.php:1545
+#: admin/admin-interface.php:1558
 msgid "Google Fonts API"
 msgstr ""
 
-#: admin/admin-interface.php:1557
+#: admin/admin-interface.php:1570
 msgid ""
 "ON to connect to Google Fonts API and have auto font updates direct from "
 "Google."
 msgstr ""
 
-#: admin/admin-interface.php:1561
+#: admin/admin-interface.php:1574
 #, php-format
 msgid ""
 "Enter your existing Google Fonts API Key below. Don't have a key? Visit <a "
 "href='%s' target='_blank'>Google Developer API</a> to create a key"
 msgstr ""
 
-#: admin/admin-interface.php:1578
+#: admin/admin-interface.php:1591
 msgid "Google Fonts API Key"
 msgstr ""
 
-#: admin/admin-interface.php:1581
+#: admin/admin-interface.php:1594
 msgid "Your Google API Key is valid and automatic font updates are enabled."
 msgstr ""
 
-#: admin/admin-interface.php:1582
+#: admin/admin-interface.php:1595
 msgid "Please enter a valid Google API Key."
 msgstr ""
 
-#: admin/admin-interface.php:1601
+#: admin/admin-interface.php:1614
 msgid "Check New Version"
 msgstr ""
 
-#: admin/admin-interface.php:1612
+#: admin/admin-interface.php:1625
 msgid "Check Now"
 msgstr ""
 
-#: admin/admin-interface.php:1631
+#: admin/admin-interface.php:1644
 msgid "Open Box Display"
 msgstr ""
 
-#: admin/admin-interface.php:1644
+#: admin/admin-interface.php:1657
 msgid ""
 "ON and each admin panel setting box OPEN | CLOSED position are saved each "
 "time changes are SAVED."
 msgstr ""
 
-#: admin/admin-interface.php:1983
+#: admin/admin-interface.php:2041
 msgid "Width"
 msgstr ""
 
-#: admin/admin-interface.php:1985
+#: admin/admin-interface.php:2043
 msgid "Height"
 msgstr ""
 
-#: admin/admin-interface.php:1987
+#: admin/admin-interface.php:2045
 msgid "Hard Crop"
 msgstr ""
 
-#: admin/admin-interface.php:2060
+#: admin/admin-interface.php:2118
 msgid "-- Default Fonts --"
 msgstr ""
 
-#: admin/admin-interface.php:2071
+#: admin/admin-interface.php:2129
 msgid "-- Google Fonts --"
 msgstr ""
 
-#: admin/admin-interface.php:2112
+#: admin/admin-interface.php:2170
 msgid "Preview your customized typography settings"
 msgstr ""
 
-#: admin/admin-interface.php:2221 admin/admin-interface.php:2455
+#: admin/admin-interface.php:2279 admin/admin-interface.php:2513
 msgid "Preview your customized border settings"
 msgstr ""
 
-#: admin/admin-interface.php:2230 admin/admin-interface.php:2446
+#: admin/admin-interface.php:2288 admin/admin-interface.php:2504
 msgid "Rounded"
 msgstr ""
 
-#: admin/admin-interface.php:2231 admin/admin-interface.php:2447
+#: admin/admin-interface.php:2289 admin/admin-interface.php:2505
 msgid "Square"
 msgstr ""
 
-#: admin/admin-interface.php:2241 admin/admin-interface.php:2460
+#: admin/admin-interface.php:2299 admin/admin-interface.php:2518
 msgid "Top Left Corner"
 msgstr ""
 
-#: admin/admin-interface.php:2261 admin/admin-interface.php:2480
+#: admin/admin-interface.php:2319 admin/admin-interface.php:2538
 msgid "Top Right Corner"
 msgstr ""
 
-#: admin/admin-interface.php:2281 admin/admin-interface.php:2500
+#: admin/admin-interface.php:2339 admin/admin-interface.php:2558
 msgid "Bottom Right Corner"
 msgstr ""
 
-#: admin/admin-interface.php:2301 admin/admin-interface.php:2520
+#: admin/admin-interface.php:2359 admin/admin-interface.php:2578
 msgid "Bottom Left Corner"
 msgstr ""
 
-#: admin/admin-interface.php:2388
+#: admin/admin-interface.php:2446
 msgid "Preview your customized border styles settings"
 msgstr ""
 
-#: admin/admin-interface.php:2571
+#: admin/admin-interface.php:2629
 msgid "YES"
 msgstr ""
 
-#: admin/admin-interface.php:2572
+#: admin/admin-interface.php:2630
 msgid "NO"
 msgstr ""
 
-#: admin/admin-interface.php:2586
+#: admin/admin-interface.php:2644
 msgid "Horizontal Shadow"
 msgstr ""
 
-#: admin/admin-interface.php:2604
+#: admin/admin-interface.php:2662
 msgid "Vertical Shadow"
 msgstr ""
 
-#: admin/admin-interface.php:2622
+#: admin/admin-interface.php:2680
 msgid "Blur Distance"
 msgstr ""
 
-#: admin/admin-interface.php:2640
+#: admin/admin-interface.php:2698
 msgid "Spread Size"
 msgstr ""
 
-#: admin/admin-interface.php:2658
+#: admin/admin-interface.php:2716
 msgid "INNER"
 msgstr ""
 
-#: admin/admin-interface.php:2659
+#: admin/admin-interface.php:2717
 msgid "OUTER"
 msgstr ""
 
-#: admin/admin-interface.php:2677
+#: admin/admin-interface.php:2735
 msgid "Preview your customized box shadow settings"
 msgstr ""
 
-#: admin/admin-interface.php:2940
+#: admin/admin-interface.php:3003
 msgid "Save changes"
 msgstr ""
 
-#: admin/admin-interface.php:2941
+#: admin/admin-interface.php:3004
 msgid "Reset Settings"
 msgstr ""
 
@@ -283,22 +283,51 @@ msgstr ""
 msgid "a3 Lazy Load"
 msgstr ""
 
-#: admin/admin-ui.php:179
+#: admin/admin-ui.php:109 admin/admin-ui.php:112
+msgid "Premium Version Enhanced Features"
+msgstr ""
+
+#: admin/admin-ui.php:113
+msgid "WooCommerce Dynamic Gallery Premium"
+msgstr ""
+
+#: admin/admin-ui.php:114
+msgid ""
+"Quick Video showing the main (not all) enhanced features that are built into "
+"the WooCommerce Dynamic Gallery Premium version"
+msgstr ""
+
+#: admin/admin-ui.php:115
+msgid "Developer Support and Premium Features"
+msgstr ""
+
+#: admin/admin-ui.php:116
+msgid ""
+"Limited Time Offer. Purchase the Premium Version Lifetime License. That is a "
+"Lifetime of maintenance updates, feature upgrades and developer support for "
+"a once only fee. Offer ending soon."
+msgstr ""
+
+#: admin/admin-ui.php:117
+msgid "Get Premium Features and Support"
+msgstr ""
+
+#: admin/admin-ui.php:264
 #, php-format
 msgid ""
 "Advanced Settings - Upgrade to the <a href=\"%s\" target=\"_blank\">%s "
 "License</a> to activate these settings."
 msgstr ""
 
-#: admin/admin-ui.php:182
+#: admin/admin-ui.php:267
 msgid "Pro Version"
 msgstr ""
 
-#: admin/admin-ui.php:232 admin/admin-ui.php:251
+#: admin/admin-ui.php:317 admin/admin-ui.php:336
 msgid "You should check now to see if have any new version is available"
 msgstr ""
 
-#: admin/admin-ui.php:234
+#: admin/admin-ui.php:319
 #, php-format
 msgid ""
 "Connection Failure! Please try again. If this issue persists please create a "
@@ -306,7 +335,7 @@ msgid ""
 "forum</a>."
 msgstr ""
 
-#: admin/admin-ui.php:242
+#: admin/admin-ui.php:327
 #, php-format
 msgid ""
 "There is a new version <span class=\"a3rev-ui-new-plugin-version\">%s</span> "
@@ -314,11 +343,11 @@ msgid ""
 "direct from <a href=\"%s\" target=\"_blank\">My Account</a> on a3rev.com"
 msgstr ""
 
-#: admin/includes/uploader/class-uploader.php:95
+#: admin/includes/uploader/class-uploader.php:101
 msgid "Upload"
 msgstr ""
 
-#: admin/includes/uploader/class-uploader.php:115
+#: admin/includes/uploader/class-uploader.php:121
 msgid "View File"
 msgstr ""
 
