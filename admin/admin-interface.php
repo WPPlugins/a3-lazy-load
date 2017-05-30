@@ -73,9 +73,15 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 		$admin_pages = $this->admin_pages();
 		
 		if ( is_admin() && isset( $_REQUEST['page'] ) && in_array( $_REQUEST['page'], $admin_pages ) ) {
+			add_action( 'admin_enqueue_scripts', array( $this, 'register_fontawesome_style' ), 0 );
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_css_load' ) );
 			do_action( $this->plugin_name . '_init_styles' );
 		}
+	}
+
+	public function register_fontawesome_style() {
+		$suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
+		wp_register_style( 'font-awesome-styles', $this->admin_plugin_url() . '/assets/css/font-awesome' . $suffix . '.css', array(), '4.5.0', 'all' );
 	}
 	
 	/*-----------------------------------------------------------------------------------*/
@@ -3295,7 +3301,11 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 		} else {
 			$return_css .= 'background-color: transparent !important ;';
 		}
+
+		return $return_css;
+
 	}
+
 }
 
 global $a3_lazy_load_admin_interface;

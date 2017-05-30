@@ -3,8 +3,8 @@
 Contributors: a3rev, A3 Revolution Software Development team, nguyencongtuan
 Tags: a3 lazy load, Lazy Loading , image lazy load, lazyload
 Requires at least: 4.0
-Tested up to: 4.4.2
-Stable tag: 1.7.0
+Tested up to: 4.5
+Stable tag: 1.7.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -155,6 +155,11 @@ Automatic installation is the easiest option as WordPress handles the file trans
 
 == Changelog ==
 
+= 1.7.1 =
+* Tweak - Register fontawesome in plugin framework with style name is 'font-awesome-styles'
+* Tweak - Update plugin framework to latest version
+* Tweak - Tested for full compatibility with WordPress major version 4.5
+
 = 1.7.0 - 2016/03/01 =
 * Feature - Full compatibility with AMP plugin. No settings for it just hardcoded that Lazy Load is not applied for any url appended with /amp endpoint. Lazy load is applied to the url without the endpoint
 * Feature - Define new 'Background Color' type on plugin framework with ON | OFF switch to disable background or enable it
@@ -275,6 +280,9 @@ Automatic installation is the easiest option as WordPress handles the file trans
 
 
 == Upgrade Notice ==
+
+= 1.7.1 =
+Maintenance Update. 2 Tweaks for full compatibility with WordPress major version 4.5
 
 = 1.7.0 =
 Feature Upgrade. Full compatibility with WordPress AMP. No settings for it - just auto. 3 other features, 3 code tweaks and 1 major Microsoft Browser bug fix

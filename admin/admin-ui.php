@@ -202,10 +202,11 @@ class A3_Lazy_Load_Admin_UI
 		if ( is_array( $extension_boxes ) && count( $extension_boxes ) > 0 ) {
 			foreach ( $extension_boxes as $box ) {
 				if ( ! isset( $box['id'] ) ) $box['id'] = '';
+				if ( ! isset( $box['class'] ) ) $box['class'] = '';
 				if ( ! isset( $box['css'] ) ) $box['css'] = '';
 				if ( ! isset( $box['content'] ) ) $box['content'] = '';
 
-				$output .= '<div id="'. esc_attr( $box['id'] ) .'" class="a3_plugin_panel_extension_box" style="'. esc_attr( $box['css'] ) .'">';
+				$output .= '<div id="'. esc_attr( $box['id'] ) .'" class="'. esc_attr( $box['class'] ) .' a3_plugin_panel_extension_box" style="'. esc_attr( $box['css'] ) .'">';
 				$output .= $box['content'];
 				$output .= '</div>';
 			}
