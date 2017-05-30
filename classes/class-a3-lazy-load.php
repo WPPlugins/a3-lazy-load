@@ -54,7 +54,7 @@ class A3_Lazy_Load
 
 		// Apply for Images
 		$skip_images_classes = apply_filters( 'a3_lazy_load_skip_images_classes', $a3_lazy_load_global_settings['a3l_skip_image_with_class'] );
-		if ( strlen( trim( $skip_images_classes ) ) ) {
+		if ( '' != trim( $skip_images_classes ) ) {
 			$this->_skip_images_classes = array_map( 'trim', explode( ',', $skip_images_classes ) );
 		}
 		if ( is_array( $this->_skip_images_classes ) ) {
@@ -65,6 +65,8 @@ class A3_Lazy_Load
 
 		if ( $a3_lazy_load_global_settings['a3l_apply_to_images'] == true ) {
 			add_filter( 'a3_lazy_load_images', array( $this, 'filter_images' ), 10, 2 );
+
+			add_filter( 'wp_get_attachment_image_attributes', array( $this, 'get_attachment_image_attributes' ), 200 );
 
 			if ( $a3_lazy_load_global_settings['a3l_apply_image_to_content'] == true ) {
 				add_filter( 'the_content', array( $this, 'filter_content_images' ), 10 );
@@ -267,7 +269,6 @@ class A3_Lazy_Load
 
 	static function filter_content_images( $content ) {
 		$A3_Lazy_Load = A3_Lazy_Load::_instance();
-		add_filter( 'wp_get_attachment_image_attributes', array( $A3_Lazy_Load, 'get_attachment_image_attributes' ), 200 );
 
 		return $A3_Lazy_Load->filter_images( $content );
 	}
@@ -275,14 +276,22 @@ class A3_Lazy_Load
 	static function get_attachment_image_attributes( $attr ) {
 		$A3_Lazy_Load = A3_Lazy_Load::_instance();
 
-		$attr['data-src'] = $attr['src'];
-		$attr['src'] = $A3_Lazy_Load->_placeholder_url;
-		$attr['class'] = 'lazy-hidden '. $attr['class'];
-		$attr['data-lazy-type'] = 'image';
-		if ( isset( $attr['srcset'] ) ) {
-			$attr['data-srcset'] = $attr['srcset'];
-			$attr['srcset'] = '';
-			unset( $attr['srcset'] );
+		if ( is_array( $this->_skip_images_classes ) ) {
+			$skip_images_preg_quoted = array_map( 'preg_quote', $this->_skip_images_classes );
+			$skip_images_regex = sprintf( '/class=".*(%s).*"/s', implode( '|', $skip_images_preg_quoted ) );
+		}
+
+		if ( ! ( is_array( $this->_skip_images_classes ) && preg_match( $skip_images_regex, 'class="'.$attr['class'].'"' ) ) && ! preg_match( "/src=.*lazy_placeholder.gif['\"]/s", 'src="'.$attr['src'].'"' ) ) {
+
+			$attr['data-src'] = $attr['src'];
+			$attr['src'] = $A3_Lazy_Load->_placeholder_url;
+			$attr['class'] = 'lazy-hidden '. $attr['class'];
+			$attr['data-lazy-type'] = 'image';
+			if ( isset( $attr['srcset'] ) ) {
+				$attr['data-srcset'] = $attr['srcset'];
+				$attr['srcset'] = '';
+				unset( $attr['srcset'] );
+			}
 		}
 
 		return $attr;
@@ -536,6 +545,11 @@ function a3_lazy_load_instance() {
 	}
 
 	if ( function_exists( 'is_amp_endpoint' ) && is_amp_endpoint() ) {
+		$allow_instance = false;
+	}
+
+	// Compatibility with Better AMP plugin
+	if ( function_exists( 'is_better_amp' ) && is_better_amp() ) {
 		$allow_instance = false;
 	}
 
