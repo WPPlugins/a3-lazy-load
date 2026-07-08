@@ -1,9 +1,13 @@
 <?php
 /* "Copyright 2012 a3 Revolution Web Design" This software is distributed under the terms of GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007 */
+
+namespace A3Rev\LazyLoad\FrameWork\Pages {
+
+use A3Rev\LazyLoad\FrameWork;
+
 // File Security Check
 if ( ! defined( 'ABSPATH' ) ) exit;
-?>
-<?php
+
 /*-----------------------------------------------------------------------------------
 a3 LazyLoad Settings Page
 
@@ -21,7 +25,7 @@ TABLE OF CONTENTS
 
 -----------------------------------------------------------------------------------*/
 
-class A3_Lazy_Load_Settings_Page extends A3_Lazy_Load_Admin_UI
+class Settings extends FrameWork\Admin_UI
 {
 	/**
 	 * @var string
@@ -59,8 +63,8 @@ class A3_Lazy_Load_Settings_Page extends A3_Lazy_Load_Admin_UI
 		$page_data = array( 
 			'type'				=> 'submenu',
 			'parent_slug'		=> 'options-general.php',
-			'page_title'		=> __('a3 Lazy Load','a3-lazy-load' ),
-			'menu_title'		=> __('a3 Lazy Load','a3-lazy-load' ),
+			'page_title'		=> __('a3 Lazy Load'),
+			'menu_title'		=> __('a3 Lazy Load'),
 			'capability'		=> 'manage_options',
 			'menu_slug'			=> $this->menu_slug,
 			'function'			=> 'a3_lazy_load_settings_page_show',
@@ -92,7 +96,8 @@ class A3_Lazy_Load_Settings_Page extends A3_Lazy_Load_Admin_UI
 	/* Include all tabs into this page
 	/*-----------------------------------------------------------------------------------*/
 	public function tabs_include() {
-		include_once( $this->admin_plugin_dir() . '/tabs/template-settings/global-settings-tab.php' );
+		global $a3_lazy_load_global_settings_tab;
+		$a3_lazy_load_global_settings_tab = new FrameWork\Tabs\Global_Settings();
 	}
 
 	/*-----------------------------------------------------------------------------------*/
@@ -100,13 +105,12 @@ class A3_Lazy_Load_Settings_Page extends A3_Lazy_Load_Admin_UI
 	/* Show Settings Page */
 	/*-----------------------------------------------------------------------------------*/
 	public function admin_settings_page() {
-		global $a3_lazy_load_admin_init;
 
-		$a3_lazy_load_admin_init->admin_settings_page( $this->page_data() );
+		$GLOBALS[$this->plugin_prefix.'admin_init']->admin_settings_page( $this->page_data() );
 
 		//$my_page_data = $this->page_data();
 		//$my_page_data = array_values( $my_page_data );
-		//$a3_lazy_load_admin_init->admin_settings_page( $my_page_data[1] );
+		//$GLOBALS[$this->plugin_prefix.'admin_init']->admin_settings_page( $my_page_data[1] );
 	}
 
 	/*-----------------------------------------------------------------------------------*/
@@ -123,8 +127,10 @@ class A3_Lazy_Load_Settings_Page extends A3_Lazy_Load_Admin_UI
 
 }
 
-global $a3_lazy_load_settings_page;
-$a3_lazy_load_settings_page = new A3_Lazy_Load_Settings_Page();
+}
+
+// global code
+namespace {
 
 /**
  * a3_lazy_load_settings_page_show()
@@ -140,4 +146,4 @@ function callback_a3_lazy_load_settings_page_show() {
 	$a3_lazy_load_settings_page->callback_admin_settings_page();
 }
 
-?>
+}

@@ -1,9 +1,11 @@
 <?php
 /* "Copyright 2012 a3 Revolution Web Design" This software is distributed under the terms of GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007 */
+
+namespace A3Rev\LazyLoad\FrameWork {
+
 // File Security Check
 if ( ! defined( 'ABSPATH' ) ) exit;
-?>
-<?php
+
 /*-----------------------------------------------------------------------------------
 A3rev Plugin Admin Init
 
@@ -20,7 +22,7 @@ TABLE OF CONTENTS
 
 -----------------------------------------------------------------------------------*/
 
-class A3_Lazy_Load_Admin_Init extends A3_Lazy_Load_Admin_UI
+class Admin_Init extends Admin_UI
 {
 
 	/**
@@ -42,7 +44,7 @@ class A3_Lazy_Load_Admin_Init extends A3_Lazy_Load_Admin_UI
 		$menu_hook = 'admin_menu';
 		add_action( $menu_hook, array( $this, 'register_admin_menu' ) );
 
-		add_action( 'plugins_loaded', array( $this, 'get_all_settings' ), 8 );
+		add_action( 'init', array( $this, 'get_all_settings' ), 101 );
 	}
 
 	/*-----------------------------------------------------------------------------------*/
@@ -187,7 +189,7 @@ class A3_Lazy_Load_Admin_Init extends A3_Lazy_Load_Admin_UI
 
 	    ?>
         <div class="wrap">
-            <div class="icon32 icon32-a3rev-ui-settings icon32-a3rev<?php echo $current_page; ?>" id="icon32-a3rev<?php echo $current_page; ?>"><br /></div>
+            <div class="icon32 icon32-a3rev-ui-settings icon32-a3rev<?php echo esc_attr( $current_page ); ?>" id="icon32-a3rev<?php echo esc_attr( $current_page ); ?>"><br /></div>
             <?php
 				$tabs = apply_filters( $this->plugin_name . '-' . $current_page . '_settings_tabs_array', array() );
 
@@ -197,7 +199,7 @@ class A3_Lazy_Load_Admin_Init extends A3_Lazy_Load_Admin_UI
 			<?php
 					if ( $page_data !== false) {
 						echo esc_html( $page_data['page_title'] );
-						if ( isset( $page_data['view_doc'] ) ) echo $page_data['view_doc'];
+						if ( isset( $page_data['view_doc'] ) ) echo wp_kses_post( $page_data['view_doc'] );
 					}
 			?>
 			</h1>
@@ -215,7 +217,7 @@ class A3_Lazy_Load_Admin_Init extends A3_Lazy_Load_Admin_UI
 					$activated_first_tab = false;
 					$tab_data = false;
 					foreach ( $tabs as $tab ) {
-						echo '<a href="' . add_query_arg( array( 'page' => $current_page, 'tab' => $tab['name'] ), admin_url( $page_data['admin_url'] ) ) . '" class="nav-tab ';
+						echo '<a href="' . esc_url( add_query_arg( array( 'page' => $current_page, 'tab' => $tab['name'] ), admin_url( $page_data['admin_url'] ) ) ) . '" class="nav-tab ';
 						if ( $current_tab == '' && $activated_first_tab === false ) {
 							echo 'nav-tab-active';
 							$activated_first_tab = true;
@@ -226,7 +228,7 @@ class A3_Lazy_Load_Admin_Init extends A3_Lazy_Load_Admin_UI
 							$tab_data = $tab;
 						}
 						echo ' ' . esc_attr( sanitize_title( $tab['name'] ) );
-						echo '">' . $tab['label'] . '</a>';
+						echo '">' . esc_html( $tab['label'] ) . '</a>';
 					}
 
 					do_action( $this->plugin_name . '-' . $current_page . '_settings_tabs' );
@@ -279,7 +281,7 @@ class A3_Lazy_Load_Admin_Init extends A3_Lazy_Load_Admin_UI
 			$separate_text = '';
 			$activated_first_subtab = false;
 			foreach ( $subtabs as $subtab ) {
-				echo '<li>' . $separate_text . '<a href="#' . trim( $subtab['name'] ) . '" class="';
+				echo '<li>' . esc_html( $separate_text ) . '<a href="#' . trim( esc_attr( $subtab['name'] ) ) . '" class="';
 				if ( $current_subtab == '' && $activated_first_subtab === false ) {
 					echo 'current';
 					$activated_first_subtab = true;
@@ -287,7 +289,7 @@ class A3_Lazy_Load_Admin_Init extends A3_Lazy_Load_Admin_UI
 				} elseif ( $current_subtab == $subtab['name'] ) {
 					echo 'current';
 				}
-				echo '">' . $subtab['label'] . '</a></li>' . "\n";
+				echo '">' . esc_html( $subtab['label'] ) . '</a></li>' . "\n";
 
 				$separate_text = ' | ';
 			}
@@ -299,7 +301,7 @@ class A3_Lazy_Load_Admin_Init extends A3_Lazy_Load_Admin_UI
         <?php
 			foreach ( $subtabs as $subtab ) {
 		?>
-        	<div class="section" id="<?php echo trim( $subtab['name'] ); ?>">
+        	<div class="section" id="<?php echo trim( esc_attr( $subtab['name'] ) ); ?>">
             <?php if ( isset( $subtab['callback_function'] ) && !empty( $subtab['callback_function'] ) ) call_user_func( $subtab['callback_function'] ); ?>
             </div>
         <?php
@@ -317,7 +319,4 @@ class A3_Lazy_Load_Admin_Init extends A3_Lazy_Load_Admin_UI
 	}
 }
 
-global $a3_lazy_load_admin_init;
-$a3_lazy_load_admin_init = new A3_Lazy_Load_Admin_Init();
-
-?>
+}

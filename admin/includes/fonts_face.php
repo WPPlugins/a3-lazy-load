@@ -1,9 +1,11 @@
 <?php
 /* "Copyright 2012 A3 Revolution Web Design" This software is distributed under the terms of GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007 */
+
+namespace A3Rev\LazyLoad\FrameWork {
+
 // File Security Check
 if ( ! defined( 'ABSPATH' ) ) exit;
-?>
-<?php
+
 /*-----------------------------------------------------------------------------------
 A3rev Plugin Fonts Face
 
@@ -19,7 +21,7 @@ TABLE OF CONTENTS
 
 -----------------------------------------------------------------------------------*/
 
-class A3_Lazy_Load_Fonts_Face extends A3_Lazy_Load_Admin_UI
+class Fonts_Face extends Admin_UI
 {
 
 	/**
@@ -355,38 +357,11 @@ class A3_Lazy_Load_Fonts_Face extends A3_Lazy_Load_Admin_UI
 	/* Fonts Face Constructor */
 	/*-----------------------------------------------------------------------------------*/
 	public function __construct() {
+		parent::__construct();
 
-		// Enable Google Font API Key
-		if ( isset( $_POST[ $this->google_api_key_option . '_enable' ] ) ) {
-			$old_google_api_key_enable = get_option( $this->google_api_key_option . '_enable', 0 );
-
-			update_option( $this->google_api_key_option . '_enable', 1 );
-
-			$option_value = trim( $_POST[ $this->google_api_key_option ] );
-
-			$old_google_api_key_option = get_option( $this->google_api_key_option );
-
-			if ( 1 != $old_google_api_key_enable || $option_value != $old_google_api_key_option ) {
-
-				update_option( $this->google_api_key_option, $option_value );
-
-				// Clear cached of google api key status
-				delete_transient( $this->google_api_key_option . '_status' );
-			}
-
-		// Disable Google Font API Key
-		} elseif ( isset( $_POST[ $this->google_api_key_option ] ) ) {
-			$old_google_api_key_enable = get_option( $this->google_api_key_option . '_enable', 0 );
-
-			update_option( $this->google_api_key_option . '_enable', 0 );
-
-			$option_value = trim( $_POST[ $this->google_api_key_option ] );
-			update_option( $this->google_api_key_option, $option_value );
-
-			if ( 0 != $old_google_api_key_enable ) {
-				// Clear cached of google api key status
-				delete_transient( $this->google_api_key_option . '_status' );
-			}
+		if ( ! $this->is_load_google_fonts ) {
+			$this->google_fonts = array();
+			return;
 		}
 
 		if ( apply_filters( $this->plugin_name . '_new_google_fonts_enable', true ) ) {
@@ -411,8 +386,79 @@ class A3_Lazy_Load_Fonts_Face extends A3_Lazy_Load_Admin_UI
 
 	}
 
+	public function update_google_font_api_key() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return false;
+		}
+
+		check_admin_referer( 'save_settings_' . $this->plugin_name );
+
+		if ( ! $this->is_load_google_fonts ) {
+			return;
+		}
+
+		// Enable Google Font API Key
+		if ( isset( $_POST[ $this->google_api_key_option . '_enable' ] ) ) {
+			$old_google_api_key_enable = get_option( $this->google_api_key_option . '_enable', 0 );
+
+			update_option( $this->google_api_key_option . '_enable', 1 );
+
+			$option_value = trim( sanitize_text_field( wp_unslash( $_POST[ $this->google_api_key_option ] ) ) );
+
+			$old_google_api_key_option = get_option( $this->google_api_key_option );
+
+			if ( 1 != $old_google_api_key_enable || $option_value != $old_google_api_key_option ) {
+
+				update_option( $this->google_api_key_option, $option_value );
+
+				// Clear cached of google api key status
+				delete_transient( $this->google_api_key_option . '_status' );
+			}
+
+		// Disable Google Font API Key
+		} elseif ( isset( $_POST[ $this->google_api_key_option ] ) ) {
+			$old_google_api_key_enable = get_option( $this->google_api_key_option . '_enable', 0 );
+
+			update_option( $this->google_api_key_option . '_enable', 0 );
+
+			$option_value = trim( sanitize_text_field( wp_unslash( $_POST[ $this->google_api_key_option ] ) ) );
+			update_option( $this->google_api_key_option, $option_value );
+
+			if ( 0 != $old_google_api_key_enable ) {
+				// Clear cached of google api key status
+				delete_transient( $this->google_api_key_option . '_status' );
+			}
+		}
+	}
+
+	public function validate_google_api_key( $g_key = '' ) {
+		$g_key = trim( $g_key );
+		$response_fonts = array();
+
+		if ( ! empty( $g_key ) ) {
+			$respone_api = wp_remote_get( "https://www.googleapis.com/webfonts/v1/webfonts?sort=alpha&key=" . $g_key,
+				array(
+					'timeout'   => 45
+				)
+			);
+
+			// Check it is a valid request
+			if ( ! is_wp_error( $respone_api ) ) {
+
+				$json_string = stripslashes( $respone_api['body'] );
+				$response_fonts = json_decode( $json_string, true );
+			}
+		}
+
+		return $response_fonts;
+	}
+
 	public function is_valid_google_api_key( $cache=true ) {
 		$is_valid = false;
+
+		if ( ! $this->is_load_google_fonts ) {
+			return false;
+		}
 
 		$this->google_api_key  = get_option( $this->google_api_key_option, '' );
 		$google_api_key_enable = get_option( $this->google_api_key_option . '_enable', 0 );
@@ -426,38 +472,28 @@ class A3_Lazy_Load_Fonts_Face extends A3_Lazy_Load_Admin_UI
 			}
 
 			if ( ! $google_api_key_status ) {
-				$respone_api = wp_remote_get( "https://www.googleapis.com/webfonts/v1/webfonts?sort=alpha&key=" . trim( $this->google_api_key ),
-					array(
-						'sslverify' => false,
-						'timeout'   => 45
-					)
-				);
 
 				$font_list = array();
-				$response_fonts = array();
+				$response_fonts = $this->validate_google_api_key( $this->google_api_key );
 
 				// Check it is a valid request
-				if ( ! is_wp_error( $respone_api ) ) {
-
-					$json_string = get_magic_quotes_gpc() ? stripslashes( $respone_api['body'] ) : $respone_api['body'];
-					$response_fonts = json_decode( $json_string, true );
-
+				if ( ! empty( $response_fonts ) ) {
 					// Make sure that the valid response from google is not an error message
 					if ( ! isset( $response_fonts['error'] ) ) {
 						$google_api_key_status = 'valid';
 					} else {
 						$google_api_key_status = 'invalid';
 					}
-
 				} else {
 					$google_api_key_status = 'invalid';
 				}
 
 				// Get font list from default webfonts.json file of plugin
 				if ( 'invalid' == $google_api_key_status && file_exists( $this->admin_plugin_dir() . '/assets/webfonts/webfonts.json' ) ) {
-					$webfonts  = wp_remote_fopen( $this->admin_plugin_url() . '/assets/webfonts/webfonts.json' );
-					if ( false != $webfonts ) {
-						$json_string = get_magic_quotes_gpc() ? stripslashes( $webfonts ) : $webfonts;
+					$response = wp_remote_get( $this->admin_plugin_url() . '/assets/webfonts/webfonts.json', array( 'timeout' => 120 ) );
+					$webfonts = wp_remote_retrieve_body( $response );
+					if ( ! empty( $webfonts ) ) {
+						$json_string = stripslashes( $webfonts );
 						$response_fonts = json_decode( $json_string, true );
 					}
 				}
@@ -508,9 +544,10 @@ class A3_Lazy_Load_Fonts_Face extends A3_Lazy_Load_Admin_UI
 
 				// Get font list from default webfonts.json file of plugin
 				if ( file_exists( $this->admin_plugin_dir() . '/assets/webfonts/webfonts.json' ) ) {
-					$webfonts  = wp_remote_fopen( $this->admin_plugin_url() . '/assets/webfonts/webfonts.json' );
-					if ( false != $webfonts ) {
-						$json_string = get_magic_quotes_gpc() ? stripslashes( $webfonts ) : $webfonts;
+					$response = wp_remote_get( $this->admin_plugin_url() . '/assets/webfonts/webfonts.json', array( 'timeout' => 120 ) );
+					$webfonts = wp_remote_retrieve_body( $response );
+					if ( ! empty( $webfonts ) ) {
+						$json_string = stripslashes( $webfonts );
 						$response_fonts = json_decode( $json_string, true );
 					}
 				}
@@ -555,6 +592,8 @@ class A3_Lazy_Load_Fonts_Face extends A3_Lazy_Load_Admin_UI
 
 		asort( $default_fonts );
 
+		$default_fonts = array_merge( array( '' => __( 'Default' ) ), $default_fonts );
+
 		return $default_fonts;
 	}
 
@@ -577,15 +616,39 @@ class A3_Lazy_Load_Fonts_Face extends A3_Lazy_Load_Admin_UI
 			$option['face'] = "'" . $option['face'] . "', arial, sans-serif";
 		}
 
-		$line_height = '1.4em';
-        if( isset( $option['line_height'] ) ){
-            $line_height = $option['line_height'];
-        }
+		$font_size        = $option['size'] ?? '';
+		$font_line_height = $option['line_height'] ?? '';
+		$font_face        = $option['face'] ?? '';
+		$font_style       = $option['style'] ?? '';
+		$font_color       = $option['color'] ?? '';
 
-		if ( !@$option['style'] && !@$option['size'] && !@$option['color'] )
-			return 'font-family: '.stripslashes($option["face"]).' !important;';
-		else
-			return 'font:'.$option['style'].' '.$option['size'].'/' . $line_height . ' ' .stripslashes($option['face']).' !important; color:'.$option['color'].' !important;';
+		$font_css = '';
+		if ( ! empty( $font_size ) && ! empty( $font_line_height ) && ! empty( $font_face ) && ! empty( $font_style ) ) {
+			$font_css .= 'font:'.$font_style.' '.$font_size.'/' . $font_line_height . ' ' .stripslashes( str_replace( array( '"', "'" ), '', $font_face ) ).' !important;';
+		} else {
+			if ( ! empty( $font_size ) ) $font_css        .= 'font-size:'.$font_size.' !important;';
+			if ( ! empty( $font_line_height ) ) $font_css .= 'line-height:'.$font_line_height.' !important;';
+			if ( ! empty( $font_face ) ) $font_css        .= 'font-family:'.stripslashes( str_replace( array( '"', "'" ), '', $font_face ) ).' !important;';
+			if ( ! empty( $font_style ) ) {
+				// font style
+				if ( strstr( $font_style, 'italic' ) !== false ) $font_css .= 'font-style:italic !important;';
+				if ( strstr( $font_style, 'normal' ) !== false ) $font_css .= 'font-style:normal !important;';
+
+				// font weight
+				if ( strstr( $font_style, 'italic' ) !== false ) {
+					$font_style_ex = explode( ' ', $font_style );
+					if ( is_array( $font_style_ex ) && count( $font_style_ex ) > 1  ) {
+						$font_css .= 'font-weight:'.$font_style_ex[0].' !important;';
+					}
+				} else {
+					$font_css .= 'font-weight:'.$font_style.' !important;';
+				}
+			}
+		}
+
+		if ( ! empty( $font_color ) ) $font_css .= 'color:'.$font_color.' !important;';
+
+		return apply_filters( $this->plugin_name . '_generate_font_css', $font_css, $option, $em );
 	}
 
 
@@ -615,14 +678,20 @@ class A3_Lazy_Load_Fonts_Face extends A3_Lazy_Load_Admin_UI
 			// Output google font css in header
 			if ( trim( $fonts ) != '' ) {
 				$fonts = str_replace( " ","+",$fonts);
-				$output .= "\n<!-- Google Webfonts -->\n";
-				$output .= '<link href="http'. ( is_ssl() ? 's' : '' ) .'://fonts.googleapis.com/css?family=' . $fonts .'" rel="stylesheet" type="text/css" />'."\n";
-				$output = str_replace( '|"','"',$output);
+
+				if ( $echo ) {
+					echo "\n<!-- Google Webfonts -->\n";
+					echo '<link href="http'. ( is_ssl() ? 's' : '' ) .'://fonts.googleapis.com/css?family=' . esc_attr( $fonts ) .'" rel="stylesheet" type="text/css" />'."\n";
+				} else {
+					$output .= "\n<!-- Google Webfonts -->\n";
+					$output .= '<link href="http'. ( is_ssl() ? 's' : '' ) .'://fonts.googleapis.com/css?family=' . esc_attr( $fonts ) .'" rel="stylesheet" type="text/css" />'."\n";
+					$output = str_replace( '|"','"',$output);
+				}
 			}
 		}
 
 		if ( $echo )
-			echo $output;
+			echo '';
 		else
 			return $output;
 
@@ -630,6 +699,4 @@ class A3_Lazy_Load_Fonts_Face extends A3_Lazy_Load_Admin_UI
 
 }
 
-global $a3_lazy_load_fonts_face;
-$a3_lazy_load_fonts_face = new A3_Lazy_Load_Fonts_Face();
-?>
+}

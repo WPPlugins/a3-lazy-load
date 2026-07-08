@@ -102,12 +102,18 @@
 
 											/* Apply for Google API Key */
 											elem.parents('.forminp-google_api_key').find('.a3rev-ui-google-api-key-container').slideDown();
+
+											/* Apply for Google Map API Key */
+											elem.parents('.forminp-google_map_api_key').find('.a3rev-ui-google-api-key-container').slideDown();
 										} else {
 											/* Apply for Border Corner */
 											elem.parents('.a3rev-ui-settings-control').find('.a3rev-ui-border-corner-value-container').slideUp();
 
 											/* Apply for Google API Key */
 											elem.parents('.forminp-google_api_key').find('.a3rev-ui-google-api-key-container').slideUp();
+
+											/* Apply for Google Map API Key */
+											elem.parents('.forminp-google_map_api_key').find('.a3rev-ui-google-api-key-container').slideUp();
 										}
 
 										$('input[name="' + input_name + '"]').trigger("a3rev-ui-onoff_checkbox-switch", [elem.val(), status]);
@@ -141,7 +147,7 @@
 								onChange: function(elem, value) {
 										var status = value.toString();
 										if ( status == 'true') {
-											$('input[name="' + input_name + '"]').not(current_item).removeAttr('checked').removeAttr('checkbox-disabled').iphoneStyle("refresh");
+											$('input[name="' + input_name + '"]').not(current_item).prop('checked',false).removeAttr('checkbox-disabled').iphoneStyle("refresh");
 										}
 										$('input[name="' + input_name + '"]').trigger("a3rev-ui-onoff_radio-switch", [elem.val(), status]);
 									},
@@ -159,7 +165,7 @@
 		/* Apply for normal checkbox */
 		$('.a3rev_panel_container .hide_options_if_checked').each(function(){
 
-			$(this).find('input:eq(0)').change(function() {
+			$(this).find('input').eq(0).on( 'change', function() {
 
 				if ($(this).is(':checked')) {
 					$(this).closest('fieldset, tr').nextUntil( '.hide_options_if_checked, .show_options_if_checked', '.hidden_option').hide();
@@ -167,12 +173,12 @@
 					$(this).closest('fieldset, tr').nextUntil( '.hide_options_if_checked, .show_options_if_checked', '.hidden_option').show();
 				}
 
-			}).change();
+			}).trigger('change');
 
 		});
 		$('.a3rev_panel_container .show_options_if_checked').each(function(){
 
-			$(this).find('input:eq(0)').change(function() {
+			$(this).find('input').eq(0).on( 'change', function() {
 
 				if ($(this).is(':checked')) {
 					$(this).closest('fieldset, tr').nextUntil( '.hide_options_if_checked, .show_options_if_checked', '.hidden_option').show();
@@ -180,20 +186,19 @@
 					$(this).closest('fieldset, tr').nextUntil( '.hide_options_if_checked, .show_options_if_checked', '.hidden_option').hide();
 				}
 
-			}).change();
+			}).trigger('change');
 
 		});
 
 		/* Apply chosen script for dropdown */
 		$(".a3rev_panel_container .chzn-select").chosen();
-		$(".a3rev_panel_container .chzn-select-deselect").chosen({ allow_single_deselect:true });
+		$(".a3rev_panel_container .chzn-select-deselect").chosen({ allow_single_deselect:true, search_contains: true });
+		$(".chzn-select-ajaxify").each( function(){
+			chosen_ajaxify($(this).attr('id'), $(this).attr('options_url'));
+		});
 
 		/* Apply help tip script */
-		$(".a3rev_panel_container .help_tip").tipTip({
-			"attribute" : "data-tip",
-			"fadeIn" : 50,
-			"fadeOut" : 50
-		});
+		$('.a3rev_panel_container .help_tip').popover({ html: true, placement: 'bottom' });
 
 		/* Apply Time Picker */
 		$('.a3rev_panel_container input.a3rev-ui-time_picker').each(function(i){
@@ -229,9 +234,9 @@
 		});
 
 		/* Apply Sub tab selected script */
-		$('div.a3_subsubsub_section ul.subsubsub li a:eq(0)').addClass('current');
-		$('div.a3_subsubsub_section .section:gt(0)').hide();
-		$('div.a3_subsubsub_section ul.subsubsub li a:gt(0)').each(function(){
+		$('div.a3_subsubsub_section ul.subsubsub li a').eq(0).addClass('current');
+		$('div.a3_subsubsub_section .section').slice(1).hide();
+		$('div.a3_subsubsub_section ul.subsubsub li a').slice(1).each(function(){
 			if( $(this).attr('class') == 'current') {
 				$('div.a3_subsubsub_section ul.subsubsub li a').removeClass('current');
 				$(this).addClass('current');
@@ -239,14 +244,14 @@
 				$('div.a3_subsubsub_section ' + $(this).attr('href') ).show();
 			}
 		});
-		$('div.a3_subsubsub_section ul.subsubsub li a').click(function(){
+		$('div.a3_subsubsub_section ul.subsubsub li a').on( 'click', function(){
 			var clicked = $(this);
 			var section = clicked.closest('.a3_subsubsub_section');
 			var target  = clicked.attr('href');
 
 			section.find('a').removeClass('current');
 
-			if ( section.find('.section:visible').size() > 0 ) {
+			if ( section.find('.section:visible').length > 0 ) {
 				section.find('.section:visible').fadeOut( 100, function() {
 					section.find( target ).fadeIn('fast');
 				});
@@ -331,7 +336,7 @@
 					version_checking_status.css('display', 'none');
 
 					// Get response
-					data = $.parseJSON( response );
+					data = JSON.parse( response );
 					if ( 0 == data.has_new_version ) {
 						version_message_container.removeClass('a3rev-ui-new-version-message');
 						version_message_container.addClass('a3rev-ui-latest-version-message');
@@ -341,6 +346,41 @@
 					}
 					version_message_container.html(data.version_message);
 					version_message_container.slideDown();
+				});
+			}
+		});
+
+		/* Apply Validate Google API Key Submit */
+		$(document).on( 'click', '.a3rev-ui-google-api-key-validate-button', function(){
+			var bt_validate = $(this);
+			var g_api_key_container = $(this).parents('.a3rev-ui-google-api-key-inside');
+			var g_api_key_field = g_api_key_container.children('.a3rev-ui-google-api-key');
+			var g_api_key = g_api_key_field.val();
+			var g_api_key_type = g_api_key_field.data('type');
+			if ( ! bt_validate.hasClass('validating') && '' != g_api_key ) {
+				bt_validate.addClass('validating');
+				g_api_key_container.removeClass('a3rev-ui-google-valid-key a3rev-ui-google-unvalid-key');
+
+				var check_data = {
+					action:			a3_admin_ui_script_params.plugin + '_a3_admin_ui_event',
+					type: 			'validate_google_api_key',
+					g_key:          g_api_key,
+					g_key_type:     g_api_key_type, 
+					security:		a3_admin_ui_script_params.security
+				};
+
+				$.post( a3_admin_ui_script_params.ajax_url, check_data, function(response){
+					bt_validate.removeClass('validating');
+
+					// Get response
+					data = JSON.parse( response );
+					if ( 0 == data.is_valid ) {
+						g_api_key_container.removeClass('a3rev-ui-google-valid-key');
+						g_api_key_container.addClass('a3rev-ui-google-unvalid-key');
+					} else {
+						g_api_key_container.addClass('a3rev-ui-google-valid-key');
+						g_api_key_container.removeClass('a3rev-ui-google-unvalid-key');
+					}
 				});
 			}
 		});
@@ -412,7 +452,7 @@
 				url: submit_data.ajax_url,
 				data: submit_data.data,
 				success: function ( response ) {
-					data = $.parseJSON( response );
+					data = JSON.parse( response );
 					$('#' + bt_ajax_submit.attr('id') ).trigger("a3rev-ui-ajax_submit-completed", [ bt_ajax_submit, data ]);
 
 					setTimeout( function() {
@@ -465,6 +505,7 @@
 			var submit_successsed = bt_ajax_submit.siblings('.a3rev-ui-ajax_multi_submit-successed');
 			var submit_errors     = bt_ajax_submit.siblings('.a3rev-ui-ajax_multi_submit-errors');
 			var progress_bar_wrap = bt_ajax_submit.siblings('.a3rev-ui-progress-bar-wrap');
+			var progress_notice   = bt_ajax_submit.siblings('.a3rev-ui-progress-notice');
 			var progress_inner    = progress_bar_wrap.find('.a3rev-ui-progress-inner');
 			var progressing_text  = progress_bar_wrap.find('.a3rev-ui-progressing-text');
 			var completed_text    = progress_bar_wrap.find('.a3rev-ui-completed-text');
@@ -516,7 +557,7 @@
 				url: submit_data.ajax_url,
 				data: submit_data.data,
 				success: function ( response ) {
-					result = $.parseJSON( response );
+					result = JSON.parse( response );
 
 					new_items = result.current_items;
 
@@ -559,6 +600,11 @@
 						progress_bar_wrap.hide();
 						progressing_text.show();
 						completed_text.hide();
+
+						if ( typeof progress_notice !== undefined ) {
+							progress_notice.hide();
+						}
+
 					}, 2000 );
 				}
 			});
@@ -653,6 +699,7 @@
 				var submit_successsed = bt_ajax_submit.siblings('.a3rev-ui-ajax_multi_submit-successed');
 				var submit_errors     = bt_ajax_submit.siblings('.a3rev-ui-ajax_multi_submit-errors');
 				var progress_bar_wrap = bt_ajax_submit.siblings('.a3rev-ui-progress-bar-wrap');
+				var progress_notice   = bt_ajax_submit.siblings('.a3rev-ui-progress-notice');
 				var progress_inner    = progress_bar_wrap.find('.a3rev-ui-progress-inner');
 				var progressing_text  = progress_bar_wrap.find('.a3rev-ui-progressing-text');
 				var completed_text    = progress_bar_wrap.find('.a3rev-ui-completed-text');
@@ -674,12 +721,24 @@
 					progressing_text.show();
 					completed_text.hide();
 					progress_inner.css({width: '0%'});
+					if ( typeof progress_notice !== undefined ) {
+						progress_notice.hide();
+					}
 				}, 3000 );
 			});
 		});
 
 		$(document).on( 'click', '.a3rev-ui-ajax_multi_submit-button', function(){
 			var bt_ajax_submit = $(this);
+
+			var confirm_message = $(this).data('confirm_message');
+			if ( typeof confirm_message !== 'undefined' && '' != confirm_message ) {
+				var confirm_submit = confirm( confirm_message );
+				if ( ! confirm_submit ) {
+					return false;
+				}
+			}
+
 			var resubmit = bt_ajax_submit.data('resubmit');
 			bt_ajax_submit.data('resubmit', 0);
 
@@ -688,6 +747,7 @@
 			var submit_successsed = bt_ajax_submit.siblings('.a3rev-ui-ajax_multi_submit-successed');
 			var submit_errors     = bt_ajax_submit.siblings('.a3rev-ui-ajax_multi_submit-errors');
 			var progress_bar_wrap = bt_ajax_submit.siblings('.a3rev-ui-progress-bar-wrap');
+			var progress_notice   = bt_ajax_submit.siblings('.a3rev-ui-progress-notice');
 			var progress_inner    = progress_bar_wrap.find('.a3rev-ui-progress-inner');
 			var progressing_text  = progress_bar_wrap.find('.a3rev-ui-progressing-text');
 			var completed_text    = progress_bar_wrap.find('.a3rev-ui-completed-text');
@@ -696,6 +756,9 @@
 			submit_successsed.hide();
 			submit_errors.hide();
 			progress_bar_wrap.show();
+			if ( typeof progress_notice !== undefined ) {
+				progress_notice.show();
+			}
 
 			// Reset progressing start point to 0 for resubmit
 			if ( resubmit == 1 ) {

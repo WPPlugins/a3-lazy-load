@@ -1,6 +1,6 @@
-/*! Lazy Load XT v1.0.6 2014-11-19
+/*! Lazy Load XT v1.1.0 2016-01-12
  * http://ressio.github.io/lazy-load-xt
- * (C) 2014 RESS.io
+ * (C) 2016 RESS.io
  * Licensed under MIT */
 
 (function ($, window, document, undefined) {
@@ -16,7 +16,7 @@
         one = [0, 1],
         srcsetOptions = {
             srcsetAttr: 'data-srcset',
-            srcsetExtended: false,
+            srcsetExtended: true,
             srcsetBaseAttr: 'data-srcset-base',
             srcsetExtAttr: 'data-srcset-ext'
         },
@@ -33,7 +33,7 @@
             options[property] = srcsetOptions[property];
         }
     }
-    options.selector += ',img[' + options.srcsetAttr + ']';
+    options.selector += ',img[' + options.srcsetAttr + '],source[' + options.srcsetAttr + ']';
 
     function mathFilter(array, action) {
         return Math[action].apply(null, $.map(array, function (item) {
@@ -56,7 +56,7 @@
             return false;
         }
 
-        var list = $.map(srcset.split(','), function (item) {
+        var list = $.map(srcset.replace(/(\s[\d.]+[whx]),/g, '$1 @,@ ').split(' @,@ '), function (item) {
             return {
                 url: reUrl.exec(item)[1],
                 w: parseFloat((reWidth.exec(item) || infty)[1]),
@@ -103,6 +103,21 @@
     }
 
     $(document).on('lazyshow', 'img', function (e, $el) {
+        var srcset = $el.attr(options.srcsetAttr);
+
+        if (srcset) {
+            if (!options.srcsetExtended && srcsetSupport) {
+                $el.attr('srcset', srcset);
+                $el.attr('data-srcset', '');
+            } else {
+                $el.lazyLoadXT.srcAttr = parseSrcset;
+            }
+        }
+    });
+
+    $(document).on('lazyshow', 'source', function (e, $el) {
+        $(this).removeClass('lazy-hidden');
+        
         var srcset = $el.attr(options.srcsetAttr);
 
         if (srcset) {

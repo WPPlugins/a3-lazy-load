@@ -1,9 +1,11 @@
 <?php
 /* "Copyright 2012 A3 Revolution Web Design" This software is distributed under the terms of GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007 */
+
+namespace A3Rev\LazyLoad\FrameWork {
+
 // File Security Check
 if ( ! defined( 'ABSPATH' ) ) exit;
-?>
-<?php
+
 /*-----------------------------------------------------------------------------------
 A3rev Plugin Admin Interface
 
@@ -32,13 +34,15 @@ TABLE OF CONTENTS
 
 -----------------------------------------------------------------------------------*/
 
-class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
+class Admin_Interface extends Admin_UI
 {
 
 	/*-----------------------------------------------------------------------------------*/
 	/* Admin Interface Constructor */
 	/*-----------------------------------------------------------------------------------*/
 	public function __construct() {
+
+		parent::__construct();
 
 		$this->admin_includes();
 
@@ -47,7 +51,6 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 
 		// AJAX hide yellow message dontshow
 		add_action( 'wp_ajax_'.$this->plugin_name.'_a3_admin_ui_event', array( $this, 'a3_admin_ui_event' ) );
-		add_action( 'wp_ajax_nopriv_'.$this->plugin_name.'_a3_admin_ui_event', array( $this, 'a3_admin_ui_event' ) );
 
 	}
 
@@ -74,22 +77,37 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 		$admin_pages = $this->admin_pages();
 		
 		if ( is_admin() && isset( $_REQUEST['page'] ) && in_array( $_REQUEST['page'], $admin_pages ) ) {
-			add_action( 'admin_enqueue_scripts', array( $this, 'register_fontawesome_style' ), 0 );
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_css_load' ) );
 			do_action( $this->plugin_name . '_init_styles' );
 		}
 	}
 
-	public function register_fontawesome_style() {
-		$suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
-		wp_register_style( 'font-awesome-styles', $this->admin_plugin_url() . '/assets/css/font-awesome' . $suffix . '.css', array(), '4.5.0', 'all' );
-	}
-
 	public function register_modal_scripts() {
 		$suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
-		wp_register_style( 'bootstrap-modal', $this->admin_plugin_url() . '/assets/css/modal' . $suffix . '.css', array(), '4.0.0', 'all' );
-		wp_register_script( 'bootstrap-util', $this->admin_plugin_url() . '/assets/js/bootstrap/util' . $suffix . '.js', array( 'jquery' ), '4.0.0', false );
-		wp_register_script( 'bootstrap-modal', $this->admin_plugin_url() . '/assets/js/bootstrap/modal' . $suffix . '.js', array( 'jquery', 'bootstrap-util' ), '4.0.0', false );
+		wp_register_style( 'bootstrap-modal', $this->admin_plugin_url() . '/assets/css/modal' . $suffix . '.css', array(), '4.1.1', 'all' );
+
+		if ( ! wp_script_is( 'bootstrap-util', 'registered' ) ) {
+			wp_register_script( 'bootstrap-util', $this->admin_plugin_url() . '/assets/js/bootstrap/util' . $suffix . '.js', array( 'jquery' ), '4.1.1', false );
+		}
+
+		wp_register_script( 'bootstrap-modal', $this->admin_plugin_url() . '/assets/js/bootstrap/modal' . $suffix . '.js', array( 'jquery', 'bootstrap-util' ), '4.1.1', false );
+	}
+
+	public function register_popover_scripts() {
+		$suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
+		wp_enqueue_style( 'bootstrap-popover', $this->admin_plugin_url() . '/assets/css/popover' . $suffix . '.css', array(), '4.1.1', 'all' );
+
+		wp_register_script( 'bootstrap-popper', $this->admin_plugin_url() . '/assets/js/bootstrap/popper.min.js', array( 'jquery' ), '4.1.1', false );
+
+		if ( ! wp_script_is( 'bootstrap-tooltip', 'registered' ) ) {
+			wp_register_script( 'bootstrap-tooltip', $this->admin_plugin_url() . '/assets/js/bootstrap/tooltip' . $suffix . '.js', array( 'jquery' ), '4.1.1', false );
+		}
+
+		if ( ! wp_script_is( 'bootstrap-util', 'registered' ) ) {
+			wp_register_script( 'bootstrap-util', $this->admin_plugin_url() . '/assets/js/bootstrap/util' . $suffix . '.js', array( 'jquery' ), '4.1.1', false );
+		}
+
+		wp_register_script( 'bootstrap-popover', $this->admin_plugin_url() . '/assets/js/bootstrap/popover' . $suffix . '.js', array( 'jquery', 'bootstrap-popper', 'bootstrap-util', 'bootstrap-tooltip' ), '4.1.1', false );
 	}
 	
 	/*-----------------------------------------------------------------------------------*/
@@ -100,16 +118,18 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 		
 		$suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
 		$rtl = is_rtl() ? '.rtl' : '';
+
+		$this->register_popover_scripts();
 		
 		wp_register_script( 'chosen', $this->admin_plugin_url() . '/assets/js/chosen/chosen.jquery' . $suffix . '.js', array( 'jquery' ), true, false );
 		wp_register_script( 'a3rev-chosen-new', $this->admin_plugin_url() . '/assets/js/chosen/chosen.jquery' . $suffix . '.js', array( 'jquery' ), $this->framework_version, false );
+		wp_register_script( 'a3rev-chosen-ajaxify', $this->admin_plugin_url() . '/assets/js/chosen/chosen.ajaxify.js', array( 'jquery', 'a3rev-chosen-new' ), $this->framework_version, false );
 		wp_register_script( 'a3rev-style-checkboxes', $this->admin_plugin_url() . '/assets/js/iphone-style-checkboxes' . $rtl . '.js', array('jquery'), $this->framework_version, false );
 		wp_register_script( 'jquery-ui-slider-rtl', $this->admin_plugin_url() . '/assets/js/ui-slider/jquery.ui.slider.rtl' . $suffix . '.js', array('jquery'), true, true );
 		
-		wp_register_script( 'a3rev-admin-ui-script', $this->admin_plugin_url() . '/assets/js/admin-ui-script.js', array('jquery'), $this->framework_version, true );
+		wp_register_script( 'a3rev-admin-ui-script', $this->admin_plugin_url() . '/assets/js/admin-ui-script.js', array('jquery', 'bootstrap-popover' ), $this->framework_version, true );
 		wp_register_script( 'a3rev-typography-preview', $this->admin_plugin_url() . '/assets/js/a3rev-typography-preview.js',  array('jquery'), $this->framework_version, true );
 		wp_register_script( 'a3rev-settings-preview', $this->admin_plugin_url() . '/assets/js/a3rev-settings-preview.js',  array('jquery'), $this->framework_version, true );
-		wp_register_script( 'jquery-tiptip', $this->admin_plugin_url() . '/assets/js/tipTip/jquery.tipTip' . $suffix . '.js', array( 'jquery' ), true, true );
 		wp_register_script( 'a3rev-metabox-ui', $this->admin_plugin_url() . '/assets/js/data-meta-boxes.js', array( 'jquery' ), $this->framework_version, true );
 		wp_register_script( 'jquery-rwd-image-maps', $this->admin_plugin_url() . '/assets/js/rwdImageMaps/jquery.rwdImageMaps.min.js', array( 'jquery' ), true, true );
 		wp_register_script( 'jquery-datetime-picker', $this->admin_plugin_url() . '/assets/js/datetimepicker/jquery.datetimepicker.js', array( 'jquery' ), true, true );
@@ -123,12 +143,11 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 			wp_enqueue_script( 'jquery-ui-slider' );
 		}
 		wp_enqueue_script( 'chosen' );
-		wp_enqueue_script( 'a3rev-chosen-new' );
+		wp_enqueue_script( 'a3rev-chosen-ajaxify' );
 		wp_enqueue_script( 'a3rev-style-checkboxes' );
 		wp_enqueue_script( 'a3rev-admin-ui-script' );
 		wp_enqueue_script( 'a3rev-typography-preview' );
 		wp_enqueue_script( 'a3rev-settings-preview' );
-		wp_enqueue_script( 'jquery-tiptip' );
 		wp_enqueue_script( 'a3rev-metabox-ui' );
 
 	} // End admin_script_load()
@@ -153,12 +172,15 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 
 	public function a3_admin_ui_event() {
 		check_ajax_referer( $this->plugin_name. '_a3_admin_ui_event', 'security' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( -1, 403 );
+		}
 		if ( isset( $_REQUEST['type'] ) ) {
-			switch ( trim( $_REQUEST['type'] ) ) {
+			switch ( trim( sanitize_text_field( wp_unslash( $_REQUEST['type'] ) ) ) ) {
 				case 'open_close_panel_box':
-					$form_key = $_REQUEST['form_key'];
-					$box_id   = $_REQUEST['box_id'];
-					$is_open  = $_REQUEST['is_open'];
+					$form_key = sanitize_key( wp_unslash( $_REQUEST['form_key'] ) );
+					$box_id   = sanitize_text_field( wp_unslash( $_REQUEST['box_id'] ) );
+					$is_open  = isset( $_REQUEST['is_open'] ) ? (int) $_REQUEST['is_open'] :0 ;
 
 					$user_id = get_current_user_id();
 					$opened_box = get_user_meta( $user_id, $this->plugin_name . '-' . trim( $form_key ), true );
@@ -174,8 +196,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 					break;
 
 				case 'check_new_version':
-					$transient_name = $_REQUEST['transient_name'];
-					delete_transient( $transient_name );
+					delete_transient( $this->version_transient );
 
 					$new_version = '';
 
@@ -190,7 +211,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 							$current_update_plugins = get_site_transient( 'update_plugins' );
 							if ( isset( $current_update_plugins->response ) ) {
 								if ( empty( $current_update_plugins->response[$this->plugin_path] ) ) {
-									$current_update_plugins->response[$this->plugin_path] = new stdClass();
+									$current_update_plugins->response[$this->plugin_path] = new \stdClass();
 								}
 								$current_update_plugins->response[$this->plugin_path]->url = "http://www.a3rev.com";
 								$current_update_plugins->response[$this->plugin_path]->slug = $this->plugin_name;
@@ -208,6 +229,49 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 						'version_message' => $version_message,
 					);
 					echo json_encode( $response_data );
+					break;
+
+				case 'validate_google_api_key':
+					$g_key      = sanitize_text_field( wp_unslash( $_REQUEST['g_key'] ) );
+					$g_key_type = sanitize_text_field( wp_unslash( $_REQUEST['g_key_type'] ) );
+
+					$is_valid = false;
+					if ( ! empty( $g_key ) ) {
+						if ( 'font' == $g_key_type ) {
+							$response_fonts = $GLOBALS[$this->plugin_prefix.'fonts_face']->validate_google_api_key( $g_key );
+							if ( ! isset( $response_fonts['error'] ) ) {
+								$is_valid = true;
+							}
+
+							if ( $is_valid ) {
+								$google_api_key_status = 'valid';
+							} else {
+								$google_api_key_status = 'invalid';
+							}
+
+							//caching google api status for 24 hours
+							set_transient( $this->google_api_key_option . '_status', $google_api_key_status, 86400 );
+
+							update_option( $this->google_api_key_option . '_enable', 1 );
+							update_option( $this->google_api_key_option, trim( $g_key ) );
+						} else {
+							$is_valid = $this->validate_google_map_api_key( $g_key );
+							update_option( $this->google_map_api_key_option . '_enable', 1 );
+							update_option( $this->google_map_api_key_option, trim( $g_key ) );
+						}
+					}
+
+					if ( $is_valid ) {
+						$is_valid = 1;
+					} else {
+						$is_valid = 0;
+					}
+
+					$response_data = array(
+						'is_valid' => $is_valid,
+					);
+					echo json_encode( $response_data );
+
 					break;
 			}
 
@@ -233,7 +297,6 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 		wp_enqueue_style( 'wp-color-picker' );
 		wp_enqueue_style( 'jquery-datetime-picker', $this->admin_plugin_url() . '/assets/css/jquery.datetimepicker.css' );
 		wp_enqueue_style( 'a3rev-chosen-new-style', $this->admin_plugin_url() . '/assets/js/chosen/chosen' . $suffix . '.css', array(), $this->framework_version );
-		wp_enqueue_style( 'a3rev-tiptip-style', $this->admin_plugin_url() . '/assets/js/tipTip/tipTip.css' );
 		wp_enqueue_style( 'a3rev-metabox-ui-style', $this->admin_plugin_url() . '/assets/css/a3_admin_metabox.css', array(), $this->framework_version );
 
 		if ( is_rtl() ) {
@@ -273,10 +336,10 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 	/*-----------------------------------------------------------------------------------*/
 	public function admin_includes() {
 		// Includes Font Face Lib
-		include_once( 'includes/fonts_face.php' );
+		$GLOBALS[$this->plugin_prefix.'fonts_face'] = new Fonts_Face();
 		
 		// Includes Uploader Lib
-		include_once( 'includes/uploader/class-uploader.php' );
+		$GLOBALS[$this->plugin_prefix.'uploader'] = new Uploader();
 	}
 	
 	/*-----------------------------------------------------------------------------------*/
@@ -284,6 +347,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 	/*-----------------------------------------------------------------------------------*/
 	public function get_font_weights() {
 		$font_weights = array (
+			''					=> __( 'Default' ),
 			'300'				=> __( 'Thin', 'a3-lazy-load' ),
 			'300 italic'		=> __( 'Thin/Italic', 'a3-lazy-load' ),
 			'normal'			=> __( 'Normal', 'a3-lazy-load' ),
@@ -327,45 +391,21 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 			if ( in_array( $value['type'], array( 'row', 'column', 'heading', 'ajax_submit', 'ajax_multi_submit' ) ) ) continue;
 			if ( ! isset( $value['id'] ) || trim( $value['id'] ) == '' ) continue;
 			if ( ! isset( $value['default'] ) ) $value['default'] = '';
-			
-			switch ( $value['type'] ) {
-				
+
+			if ( 'array_textfields' === $value['type'] ) {
 				// Array textfields
-				case 'array_textfields' :
-					if ( !isset( $value['ids'] ) || !is_array( $value['ids'] ) || count( $value['ids'] ) < 1 ) break;
-					
-					foreach ( $value['ids'] as $text_field ) {
-						if ( ! isset( $text_field['id'] ) || trim( $text_field['id'] ) == '' ) continue;
-						if ( ! isset( $text_field['default'] ) ) $text_field['default'] = '';
-						
-						// Do not include when it's separate option
-						if ( isset( $text_field['separate_option'] ) && $text_field['separate_option'] != false ) continue;
-						
-						// Remove [, ] characters from id argument
-						if ( strstr( $text_field['id'], '[' ) ) {
-							parse_str( esc_attr( $text_field['id'] ), $option_array );
+				if ( !isset( $value['ids'] ) || !is_array( $value['ids'] ) || count( $value['ids'] ) < 1 ) continue;
 				
-							// Option name is first key
-							$option_keys = array_keys( $option_array );
-							$first_key = current( $option_keys );
-								
-							$id_attribute		= $first_key;
-						} else {
-							$id_attribute		= esc_attr( $text_field['id'] );
-						}
-						
-						$default_settings[$id_attribute] = $text_field['default'];
-					}
+				foreach ( $value['ids'] as $text_field ) {
+					if ( ! isset( $text_field['id'] ) || trim( $text_field['id'] ) == '' ) continue;
+					if ( ! isset( $text_field['default'] ) ) $text_field['default'] = '';
 					
-				break;
-				
-				default :
 					// Do not include when it's separate option
-					if ( isset( $value['separate_option'] ) && $value['separate_option'] != false ) continue;
+					if ( isset( $text_field['separate_option'] ) && $text_field['separate_option'] != false ) continue;
 					
 					// Remove [, ] characters from id argument
-					if ( strstr( $value['id'], '[' ) ) {
-						parse_str( esc_attr( $value['id'] ), $option_array );
+					if ( strstr( $text_field['id'], '[' ) ) {
+						parse_str( esc_attr( $text_field['id'] ), $option_array );
 			
 						// Option name is first key
 						$option_keys = array_keys( $option_array );
@@ -373,17 +413,34 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 							
 						$id_attribute		= $first_key;
 					} else {
-						$id_attribute		= esc_attr( $value['id'] );
+						$id_attribute		= esc_attr( $text_field['id'] );
 					}
-
-					// Backward compatibility to old settings don't have line_height option for typography
-					if ( 'typography' == $value['type'] && ! isset( $value['default']['line_height'] ) ) {
-						$value['default']['line_height'] = '1.4em';
-					}
-
-					$default_settings[$id_attribute] = $value['default'];
+					
+					$default_settings[$id_attribute] = $text_field['default'];
+				}
+			} else {
+				// Do not include when it's separate option
+				if ( isset( $value['separate_option'] ) && $value['separate_option'] != false ) continue;
 				
-				break;
+				// Remove [, ] characters from id argument
+				if ( strstr( $value['id'], '[' ) ) {
+					parse_str( esc_attr( $value['id'] ), $option_array );
+		
+					// Option name is first key
+					$option_keys = array_keys( $option_array );
+					$first_key = current( $option_keys );
+						
+					$id_attribute		= $first_key;
+				} else {
+					$id_attribute		= esc_attr( $value['id'] );
+				}
+
+				// Backward compatibility to old settings don't have line_height option for typography
+				if ( 'typography' == $value['type'] && ! isset( $value['default']['line_height'] ) ) {
+					$value['default']['line_height'] = '1.4em';
+				}
+
+				$default_settings[$id_attribute] = $value['default'];
 			}
 		}
 		
@@ -405,9 +462,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 		$new_settings = array(); $new_single_setting = ''; // :)
 		
 		// Get settings for option values is an array and it's in single option name for all settings
-		if ( trim( $option_name ) != '' ) {
-			global ${$option_name};
-			
+		if ( trim( $option_name ) != '' ) {			
 			$default_settings = $this->get_settings_default( $options, $option_name );
 			
 			$current_settings = get_option( $option_name );
@@ -417,7 +472,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 			$current_settings = array_map( array( $this, 'admin_stripslashes' ), $current_settings );
 			$current_settings = apply_filters( $this->plugin_name . '_' . $option_name . '_get_settings' , $current_settings );
 			
-			$$option_name = $current_settings;
+			$GLOBALS[$option_name] = $current_settings;
 			
 		}
 		
@@ -445,7 +500,6 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 			}
 			
 			if ( trim( $option_name ) == '' || $value['separate_option'] != false ) {
-				global ${$id_attribute};
 				
 				$current_setting = get_option( $id_attribute, $value['default'] );
 				
@@ -476,7 +530,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 				
 				$current_setting = apply_filters( $this->plugin_name . '_' . $id_attribute . '_get_setting' , $current_setting );
 				
-				$$id_attribute = $current_setting;
+				$GLOBALS[$id_attribute] = $current_setting;
 			}
 		}
 		
@@ -495,7 +549,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 
 				if ( trim( $option_name ) != '' ) {
 					update_option( $option_name, $new_settings );
-					$$option_name = $new_settings;
+					$GLOBALS[$option_name] = $new_settings;
 				}
 				
 				foreach ( $options as $value ) {
@@ -523,7 +577,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 					
 					if ( trim( $option_name ) == '' || $value['separate_option'] != false ) {
 						update_option( $id_attribute,  $new_single_setting );
-						$$id_attribute = $new_single_setting;
+						$GLOBALS[$id_attribute] = $new_single_setting;
 					}
 				}
 			}
@@ -538,10 +592,19 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 	/*-----------------------------------------------------------------------------------*/
 
 	public function save_settings( $options, $option_name = '' ) {
+
+		check_admin_referer( 'save_settings_' . $this->plugin_name );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return false;
+		}
 				
 		if ( !is_array( $options ) || count( $options ) < 1 ) return;
 		
 		if ( empty( $_POST ) ) return false;
+
+		$this->update_google_map_api_key();
+		$GLOBALS[$this->plugin_prefix.'fonts_face']->update_google_font_api_key();
 		
 		$update_options = array();
 		$update_separate_options = array();
@@ -551,6 +614,10 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 		foreach ( $options as $value ) {
 			if ( ! isset( $value['type'] ) ) continue;
 			if ( in_array( $value['type'], array( 'row', 'column', 'heading', 'ajax_submit', 'ajax_multi_submit' ) ) ) continue;
+			if ( stristr( $value['type'], 'custom_' ) !== false ) {
+				do_action( $this->plugin_name . '_save_setting_' . $value['type'], $value );
+				continue;
+			}
 
 			// Save for global settings of plugin framework
 			switch ( $value['type'] ) {
@@ -594,146 +661,77 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 			
 			// Get the option name
 			$option_value = null;
-			
-			switch ( $value['type'] ) {
-	
-				// Checkbox type
-				case 'checkbox' :
-				case 'onoff_checkbox' :
-				case 'switcher_checkbox' :
-				
-					if ( ! isset( $value['checked_value'] ) ) $value['checked_value'] = 1;
-					if ( ! isset( $value['unchecked_value'] ) ) $value['unchecked_value'] = 0;
-					
-					if ( trim( $option_name ) == '' || $value['separate_option'] != false ) {
-						if ( $key != false ) {
-							if ( isset( $_POST[ $id_attribute ][ $key ] ) ) {
-								$option_value = $value['checked_value'];
-							} else {
-								$option_value = $value['unchecked_value'];
-							}	
-						} else {
-							if ( isset( $_POST[ $id_attribute ] ) ) {
-								$option_value = $value['checked_value'];
-							} else {
-								$option_value = $value['unchecked_value'];
-							}
-						}
-							
-					} else {
-						if ( $key != false ) {
-							if ( isset( $_POST[ $option_name ][ $id_attribute ][ $key ] ) ) {
-								$option_value = $value['checked_value'];
-							} else {
-								$option_value = $value['unchecked_value'];
-							}	
-						} else {
-							if ( isset( $_POST[ $option_name ][ $id_attribute ] ) ) {
-								$option_value = $value['checked_value'];
-							} else {
-								$option_value = $value['unchecked_value'];
-							}
-						}
-					}
-	
-				break;
-				
-				// Array textfields
-				case 'array_textfields' :
-					if ( !isset( $value['ids'] ) || !is_array( $value['ids'] ) || count( $value['ids'] ) < 1 ) break;
-					
-					foreach ( $value['ids'] as $text_field ) {
-						if ( ! isset( $text_field['id'] ) || trim( $text_field['id'] ) == '' ) continue;
-						if ( ! isset( $text_field['default'] ) ) $text_field['default'] = '';
-						
-						// Remove [, ] characters from id argument
-						$key = false;
-						if ( strstr( $text_field['id'], '[' ) ) {
-							parse_str( esc_attr( $text_field['id'] ), $option_array );
-				
-							// Option name is first key
-							$option_keys = array_keys( $option_array );
-							$first_key = current( $option_keys );
-								
-							$id_attribute		= $first_key;
-							
-							$key = key( $option_array[ $id_attribute ] );
-						} else {
-							$id_attribute		= esc_attr( $text_field['id'] );
-						}
-						
-						// Get the option name
-						$option_value = null;
-						
-						if ( trim( $option_name ) == '' || $value['separate_option'] != false ) {
-							if ( $key != false ) {
-								if ( isset( $_POST[ $id_attribute ][ $key ] ) ) {
-									$option_value = $_POST[ $id_attribute ][ $key ];
-								} else {
-									$option_value = '';
-								}	
-							} else {
-								if ( isset( $_POST[ $id_attribute ] ) ) {
-									$option_value = $_POST[ $id_attribute ];
-								} else {
-									$option_value = '';
-								}
-							}
-								
-						} else {
-							if ( $key != false ) {
-								if ( isset( $_POST[ $option_name ][ $id_attribute ][ $key ] ) ) {
-									$option_value = $_POST[ $option_name ][ $id_attribute ][ $key ];
-								} else {
-									$option_value = '';
-								}	
-							} else {
-								if ( isset( $_POST[ $option_name ][ $id_attribute ] ) ) {
-									$option_value = $_POST[ $option_name ][ $id_attribute ];
-								} else {
-									$option_value = '';
-								}
-							}
-						}
 
-						// Set Default value if this field is required and has default value and option value is empty
-						if ( isset ( $text_field['required'] ) && $text_field['required'] && empty( $option_value ) && ! empty( $text_field['default'] ) ) {
-							$option_value = $text_field['default'];
-						}
-						
-						if ( strstr( $text_field['id'], '[' ) ) {
-							// Set keys and value
-	    					$key = key( $option_array[ $id_attribute ] );
-			
-							$update_options[ $id_attribute ][ $key ] = $option_value;
-							
-							if ( trim( $option_name ) != '' && $value['separate_option'] != false ) {
-								$update_separate_options[ $id_attribute ][ $key ] = $option_value;
-							}
-							
+			if ( in_array( $value['type'], array( 'checkbox', 'onoff_checkbox', 'switcher_checkbox' ) ) ) {
+				if ( ! isset( $value['checked_value'] ) ) $value['checked_value'] = 1;
+				if ( ! isset( $value['unchecked_value'] ) ) $value['unchecked_value'] = 0;
+				
+				if ( trim( $option_name ) == '' || $value['separate_option'] != false ) {
+					if ( $key != false ) {
+						if ( isset( $_POST[ $id_attribute ][ $key ] ) ) {
+							$option_value = $value['checked_value'];
 						} else {
-							$update_options[ $id_attribute ] = $option_value;
-							
-							if ( trim( $option_name ) != '' && $value['separate_option'] != false ) {
-								$update_separate_options[ $id_attribute ] = $option_value;
-							}
+							$option_value = $value['unchecked_value'];
+						}	
+					} else {
+						if ( isset( $_POST[ $id_attribute ] ) ) {
+							$option_value = $value['checked_value'];
+						} else {
+							$option_value = $value['unchecked_value'];
 						}
 					}
+						
+				} else {
+					if ( $key != false ) {
+						if ( isset( $_POST[ $option_name ][ $id_attribute ][ $key ] ) ) {
+							$option_value = $value['checked_value'];
+						} else {
+							$option_value = $value['unchecked_value'];
+						}	
+					} else {
+						if ( isset( $_POST[ $option_name ][ $id_attribute ] ) ) {
+							$option_value = $value['checked_value'];
+						} else {
+							$option_value = $value['unchecked_value'];
+						}
+					}
+				}
+			} elseif ( 'array_textfields' === $value['type'] ) {
+				if ( !isset( $value['ids'] ) || !is_array( $value['ids'] ) || count( $value['ids'] ) < 1 ) continue;
 					
-				break;
-	
-				// Other types
-				default :
+				foreach ( $value['ids'] as $text_field ) {
+					if ( ! isset( $text_field['id'] ) || trim( $text_field['id'] ) == '' ) continue;
+					if ( ! isset( $text_field['default'] ) ) $text_field['default'] = '';
+					
+					// Remove [, ] characters from id argument
+					$key = false;
+					if ( strstr( $text_field['id'], '[' ) ) {
+						parse_str( esc_attr( $text_field['id'] ), $option_array );
+			
+						// Option name is first key
+						$option_keys = array_keys( $option_array );
+						$first_key = current( $option_keys );
+							
+						$id_attribute		= $first_key;
+						
+						$key = key( $option_array[ $id_attribute ] );
+					} else {
+						$id_attribute		= esc_attr( $text_field['id'] );
+					}
+					
+					// Get the option name
+					$option_value = null;
+					
 					if ( trim( $option_name ) == '' || $value['separate_option'] != false ) {
 						if ( $key != false ) {
 							if ( isset( $_POST[ $id_attribute ][ $key ] ) ) {
-								$option_value = $_POST[ $id_attribute ][ $key ];
+								$option_value = sanitize_text_field( wp_unslash( $_POST[ $id_attribute ][ $key ] ) );
 							} else {
 								$option_value = '';
 							}	
 						} else {
 							if ( isset( $_POST[ $id_attribute ] ) ) {
-								$option_value = $_POST[ $id_attribute ];
+								$option_value = sanitize_text_field( wp_unslash( $_POST[ $id_attribute ] ) );
 							} else {
 								$option_value = '';
 							}
@@ -742,69 +740,237 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 					} else {
 						if ( $key != false ) {
 							if ( isset( $_POST[ $option_name ][ $id_attribute ][ $key ] ) ) {
-								$option_value = $_POST[ $option_name ][ $id_attribute ][ $key ];
+								$option_value = sanitize_text_field( wp_unslash( $_POST[ $option_name ][ $id_attribute ][ $key ] ) );
 							} else {
 								$option_value = '';
 							}	
 						} else {
 							if ( isset( $_POST[ $option_name ][ $id_attribute ] ) ) {
-								$option_value = $_POST[ $option_name ][ $id_attribute ];
+								$option_value = sanitize_text_field( wp_unslash( $_POST[ $option_name ][ $id_attribute ] ) );
 							} else {
 								$option_value = '';
 							}
 						}
 					}
 
-					// Just for Color type
-					if ( 'color' == $value['type'] && '' == trim( $option_value ) ) {
-						$option_value = 'transparent';
+					// Set Default value if this field is required and has default value and option value is empty
+					if ( isset ( $text_field['required'] ) && $text_field['required'] && empty( $option_value ) && ! empty( $text_field['default'] ) ) {
+						$option_value = $text_field['default'];
 					}
-					// Just for Background Color type
-					elseif ( 'bg_color' == $value['type'] && '' == trim( $option_value['color'] ) ) {
-						$option_value['color'] = 'transparent';
-					} elseif ( 'upload' == $value['type'] ) {
-						// Uploader: Set key and value for attachment id of upload type
-						if ( strstr( $value['id'], '[' ) ) {
-							$key = key( $option_array[ $id_attribute ] );
-
-							if ( trim( $option_name ) != '' && $value['separate_option'] != false ) {
-								if ( isset( $_POST[ $id_attribute ][ $key . '_attachment_id' ] ) ) {
-									$attachment_id = $_POST[ $id_attribute ][ $key . '_attachment_id' ];
-								} else {
-									$attachment_id = 0;
-								}
-
-								$update_separate_options[ $id_attribute ][ $key . '_attachment_id' ] = $attachment_id;
-							} else {
-								if ( isset( $_POST[ $option_name ][ $id_attribute ][ $key . '_attachment_id' ] ) ) {
-									$attachment_id = $_POST[ $option_name ][ $id_attribute ][ $key . '_attachment_id' ];
-								} else {
-									$attachment_id = 0;
-								}
-
-								$update_options[ $id_attribute ][ $key . '_attachment_id' ] = $attachment_id;
-							}
-						} else {
-							if ( trim( $option_name ) != '' && $value['separate_option'] != false ) {
-								if ( isset( $_POST[ $id_attribute . '_attachment_id' ] ) ) {
-									$attachment_id = $_POST[ $id_attribute . '_attachment_id' ];
-								} else {
-									$attachment_id = 0;
-								}
-								$update_separate_options[ $id_attribute . '_attachment_id' ] = $attachment_id;
-							} else {
-								if ( isset( $_POST[ $option_name ][ $id_attribute . '_attachment_id' ] ) ) {
-									$attachment_id = $_POST[ $option_name ][ $id_attribute . '_attachment_id' ];
-								} else {
-									$attachment_id = 0;
-								}
-								$update_options[ $id_attribute . '_attachment_id' ] = $attachment_id;
-							}
+					
+					if ( strstr( $text_field['id'], '[' ) ) {
+						// Set keys and value
+    					$key = key( $option_array[ $id_attribute ] );
+		
+						$update_options[ $id_attribute ][ $key ] = $option_value;
+						
+						if ( trim( $option_name ) != '' && $value['separate_option'] != false ) {
+							$update_separate_options[ $id_attribute ][ $key ] = $option_value;
+						}
+						
+					} else {
+						$update_options[ $id_attribute ] = $option_value;
+						
+						if ( trim( $option_name ) != '' && $value['separate_option'] != false ) {
+							$update_separate_options[ $id_attribute ] = $option_value;
 						}
 					}
+				}
+			} else {
+				if ( trim( $option_name ) == '' || $value['separate_option'] != false ) {
+					if ( $key != false ) {
+						if ( isset( $_POST[ $id_attribute ][ $key ] ) ) {
 
-				break;
-	
+							// sanitize content for wp_editor type
+							if ( 'wp_editor' === $value['type'] ) {
+								$option_value = wp_kses_post_deep( wp_unslash( $_POST[ $id_attribute ][ $key ] ) );
+							} elseif ( 'email' === $value['type'] ) {
+								if ( is_array( $_POST[ $id_attribute ][ $key ] ) ) {
+									$option_value = array_map( 'sanitize_email', wp_unslash( $_POST[ $id_attribute ][ $key ] ) );
+								} else {
+									$option_value = sanitize_email( wp_unslash( $_POST[ $id_attribute ][ $key ] ) );
+								}
+							} elseif ( 'color' === $value['type'] ) {
+								if ( is_array( $_POST[ $id_attribute ][ $key ] ) ) {
+									$option_value = array_map( 'sanitize_hex_color', wp_unslash( $_POST[ $id_attribute ][ $key ] ) );
+								} else {
+									$option_value = sanitize_hex_color( wp_unslash( $_POST[ $id_attribute ][ $key ] ) );
+								}
+							} elseif ( 'textarea' === $value['type'] ) {
+								if ( is_array( $_POST[ $id_attribute ][ $key ] ) ) {
+									$option_value = array_map( 'sanitize_textarea_field', wp_unslash( $_POST[ $id_attribute ][ $key ] ) );
+								} else {
+									$option_value = sanitize_textarea_field( wp_unslash( $_POST[ $id_attribute ][ $key ] ) );
+								}
+							} else {
+								if ( is_array( $_POST[ $id_attribute ][ $key ] ) ) {
+									$option_value = array_map( 'sanitize_text_field', wp_unslash( $_POST[ $id_attribute ][ $key ] ) );
+								} else {
+									$option_value = sanitize_text_field( wp_unslash( $_POST[ $id_attribute ][ $key ] ) );
+								}
+							}
+
+						} else {
+							$option_value = '';
+						}	
+					} else {
+						if ( isset( $_POST[ $id_attribute ] ) ) {
+
+							// sanitize content for wp_editor type
+							if ( 'wp_editor' === $value['type'] ) {
+								$option_value = wp_kses_post_deep( wp_unslash( $_POST[ $id_attribute ] ) );
+							} elseif ( 'email' === $value['type'] ) {
+								if ( is_array( $_POST[ $id_attribute ] ) ) {
+									$option_value = array_map( 'sanitize_email', wp_unslash( $_POST[ $id_attribute ] ) );
+								} else {
+									$option_value = sanitize_email( wp_unslash( $_POST[ $id_attribute ] ) );
+								}
+							} elseif ( 'color' === $value['type'] ) {
+								if ( is_array( $_POST[ $id_attribute ] ) ) {
+									$option_value = array_map( 'sanitize_hex_color', wp_unslash( $_POST[ $id_attribute ] ) );
+								} else {
+									$option_value = sanitize_hex_color( wp_unslash( $_POST[ $id_attribute ] ) );
+								}
+							} elseif ( 'textarea' === $value['type'] ) {
+								if ( is_array( $_POST[ $id_attribute ] ) ) {
+									$option_value = array_map( 'sanitize_textarea_field', wp_unslash( $_POST[ $id_attribute ] ) );
+								} else {
+									$option_value = sanitize_textarea_field( wp_unslash( $_POST[ $id_attribute ] ) );
+								}
+							} else {
+								if ( is_array( $_POST[ $id_attribute ] ) ) {
+									$option_value = array_map( 'sanitize_text_field', wp_unslash( $_POST[ $id_attribute ] ) );
+								} else {
+									$option_value = sanitize_text_field( wp_unslash( $_POST[ $id_attribute ] ) );
+								}
+							}
+
+						} else {
+							$option_value = '';
+						}
+					}
+						
+				} else {
+					if ( $key != false ) {
+						if ( isset( $_POST[ $option_name ][ $id_attribute ][ $key ] ) ) {
+
+							// sanitize content for wp_editor type
+							if ( 'wp_editor' === $value['type'] ) {
+								$option_value = wp_kses_post_deep( wp_unslash( $_POST[ $option_name ][ $id_attribute ][ $key ] ) );
+							} elseif ( 'email' === $value['type'] ) {
+								if ( is_array( $_POST[ $option_name ][ $id_attribute ][ $key ] ) ) {
+									$option_value = array_map( 'sanitize_email', wp_unslash( $_POST[ $option_name ][ $id_attribute ][ $key ] ) );
+								} else {
+									$option_value = sanitize_email( wp_unslash( $_POST[ $option_name ][ $id_attribute ][ $key ] ) );
+								}
+							} elseif ( 'color' === $value['type'] ) {
+								if ( is_array( $_POST[ $option_name ][ $id_attribute ][ $key ] ) ) {
+									$option_value = array_map( 'sanitize_hex_color', wp_unslash( $_POST[ $option_name ][ $id_attribute ][ $key ] ) );
+								} else {
+									$option_value = sanitize_hex_color( wp_unslash( $_POST[ $option_name ][ $id_attribute ][ $key ] ) );
+								}
+							} elseif ( 'textarea' === $value['type'] ) {
+								if ( is_array( $_POST[ $option_name ][ $id_attribute ][ $key ] ) ) {
+									$option_value = array_map( 'sanitize_textarea_field', wp_unslash( $_POST[ $option_name ][ $id_attribute ][ $key ] ) );
+								} else {
+									$option_value = sanitize_textarea_field( wp_unslash( $_POST[ $option_name ][ $id_attribute ][ $key ] ) );
+								}
+							} else {
+								if ( is_array( $_POST[ $option_name ][ $id_attribute ][ $key ] ) ) {
+									$option_value = array_map( 'sanitize_text_field', wp_unslash( $_POST[ $option_name ][ $id_attribute ][ $key ] ) );
+								} else {
+									$option_value = sanitize_text_field( wp_unslash( $_POST[ $option_name ][ $id_attribute ][ $key ] ) );
+								}
+							}
+
+						} else {
+							$option_value = '';
+						}	
+					} else {
+						if ( isset( $_POST[ $option_name ][ $id_attribute ] ) ) {
+
+							// sanitize content for wp_editor type
+							if ( 'wp_editor' === $value['type'] ) {
+								$option_value = wp_kses_post_deep( wp_unslash( $_POST[ $option_name ][ $id_attribute ] ) );
+							} elseif ( 'email' === $value['type'] ) {
+								if ( is_array( $_POST[ $option_name ][ $id_attribute ] ) ) {
+									$option_value = array_map( 'sanitize_email', wp_unslash( $_POST[ $option_name ][ $id_attribute ] ) );
+								} else {
+									$option_value = sanitize_email( wp_unslash( $_POST[ $option_name ][ $id_attribute ] ) );
+								}
+							} elseif ( 'color' === $value['type'] ) {
+								if ( is_array( $_POST[ $option_name ][ $id_attribute ] ) ) {
+									$option_value = array_map( 'sanitize_hex_color', wp_unslash( $_POST[ $option_name ][ $id_attribute ] ) );
+								} else {
+									$option_value = sanitize_hex_color( wp_unslash( $_POST[ $option_name ][ $id_attribute ] ) );
+								}
+							} elseif ( 'textarea' === $value['type'] ) {
+								if ( is_array( $_POST[ $option_name ][ $id_attribute ] ) ) {
+									$option_value = array_map( 'sanitize_textarea_field', wp_unslash( $_POST[ $option_name ][ $id_attribute ] ) );
+								} else {
+									$option_value = sanitize_textarea_field( wp_unslash( $_POST[ $option_name ][ $id_attribute ] ) );
+								}
+							} else {
+								if ( is_array( $_POST[ $option_name ][ $id_attribute ] ) ) {
+									$option_value = array_map( 'sanitize_text_field', wp_unslash( $_POST[ $option_name ][ $id_attribute ] ) );
+								} else {
+									$option_value = sanitize_text_field( wp_unslash( $_POST[ $option_name ][ $id_attribute ] ) );
+								}
+							}
+
+						} else {
+							$option_value = '';
+						}
+					}
+				}
+
+				// Just for Color type
+				if ( 'color' == $value['type'] && ( empty( $option_value ) || '' == trim( $option_value ) ) ) {
+					$option_value = 'transparent';
+				}
+				// Just for Background Color type
+				elseif ( 'bg_color' == $value['type'] && '' == trim( $option_value['color'] ) ) {
+					$option_value['color'] = 'transparent';
+				} elseif ( 'upload' == $value['type'] ) {
+					// Uploader: Set key and value for attachment id of upload type
+					if ( strstr( $value['id'], '[' ) ) {
+						$key = key( $option_array[ $id_attribute ] );
+
+						if ( trim( $option_name ) != '' && $value['separate_option'] != false ) {
+							if ( isset( $_POST[ $id_attribute ][ $key . '_attachment_id' ] ) ) {
+								$attachment_id = intval( $_POST[ $id_attribute ][ $key . '_attachment_id' ] );
+							} else {
+								$attachment_id = 0;
+							}
+
+							$update_separate_options[ $id_attribute ][ $key . '_attachment_id' ] = $attachment_id;
+						} else {
+							if ( isset( $_POST[ $option_name ][ $id_attribute ][ $key . '_attachment_id' ] ) ) {
+								$attachment_id = intval( $_POST[ $option_name ][ $id_attribute ][ $key . '_attachment_id' ] );
+							} else {
+								$attachment_id = 0;
+							}
+
+							$update_options[ $id_attribute ][ $key . '_attachment_id' ] = $attachment_id;
+						}
+					} else {
+						if ( trim( $option_name ) != '' && $value['separate_option'] != false ) {
+							if ( isset( $_POST[ $id_attribute . '_attachment_id' ] ) ) {
+								$attachment_id = intval( $_POST[ $id_attribute . '_attachment_id' ] );
+							} else {
+								$attachment_id = 0;
+							}
+							$update_separate_options[ $id_attribute . '_attachment_id' ] = $attachment_id;
+						} else {
+							if ( isset( $_POST[ $option_name ][ $id_attribute . '_attachment_id' ] ) ) {
+								$attachment_id = intval( $_POST[ $option_name ][ $id_attribute . '_attachment_id' ] );
+							} else {
+								$attachment_id = 0;
+							}
+							$update_options[ $id_attribute . '_attachment_id' ] = $attachment_id;
+						}
+					}
+				}
 			}
 			
 			if ( !in_array( $value['type'], array( 'array_textfields' ) ) ) {
@@ -864,6 +1030,14 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 	/*-----------------------------------------------------------------------------------*/
 
 	public function reset_settings( $options, $option_name = '', $reset = false, $free_version = false ) {
+
+		if ( $reset && ! $free_version ) {
+			check_admin_referer( 'save_settings_' . $this->plugin_name );
+
+			if ( ! current_user_can( 'manage_options' ) ) {
+				return false;
+			}
+		}
 		
 		if ( !is_array( $options ) || count( $options ) < 1 ) return;
 		
@@ -884,12 +1058,10 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 						if ( ! isset( $value['type'] ) ) continue;
 						if ( in_array( $value['type'], array( 'row', 'column', 'heading', 'ajax_submit', 'ajax_multi_submit' ) ) ) continue;
 						if ( ! isset( $value['id'] ) || trim( $value['id'] ) == '' ) continue;
-						
-						switch ( $value['type'] ) {
-				
+
+						if ( 'array_textfields' === $value['type'] ) {
 							// Array textfields
-							case 'array_textfields' :
-								if ( !isset( $value['ids'] ) || !is_array( $value['ids'] ) || count( $value['ids'] ) < 1 ) break;
+							if ( !isset( $value['ids'] ) || !is_array( $value['ids'] ) || count( $value['ids'] ) < 1 ) continue;
 								
 								foreach ( $value['ids'] as $text_field ) {
 									if ( ! isset( $text_field['id'] ) || trim( $text_field['id'] ) == '' ) continue;
@@ -902,15 +1074,10 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 									}
 									if ( $text_field['free_version'] ) unset( $default_settings[ $text_field['id']] );
 								}
-								
-							break;
-							
-							default :
-								if ( ! isset( $value['default'] ) ) $value['default'] = '';
-								if ( ! isset( $value['free_version'] ) ) $value['free_version'] = false;
-								if ( $value['free_version'] ) unset( $default_settings[ $value['id']] );
-							
-							break;
+						} else {
+							if ( ! isset( $value['default'] ) ) $value['default'] = '';
+							if ( ! isset( $value['free_version'] ) ) $value['free_version'] = false;
+							if ( $value['free_version'] ) unset( $default_settings[ $value['id']] );
 						}
 					}
 					
@@ -930,89 +1097,33 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 			if ( ! isset( $value['id'] ) || trim( $value['id'] ) == '' ) continue;
 			if ( ! isset( $value['default'] ) ) $value['default'] = '';
 			if ( ! isset( $value['free_version'] ) ) $value['free_version'] = false;
+
+			if ( stristr( $value['type'], 'custom_' ) !== false ) {
+				do_action( $this->plugin_name . '_reset_setting_' . $value['type'], $value );
+				continue;
+			}
 			
 			// For way it has an option name
 			if ( ! isset( $value['separate_option'] ) ) $value['separate_option'] = false;
-			
-			switch ( $value['type'] ) {
-				
-				// Array textfields
-				case 'array_textfields' :
-					if ( !isset( $value['ids'] ) || !is_array( $value['ids'] ) || count( $value['ids'] ) < 1 ) break;
-								
-					foreach ( $value['ids'] as $text_field ) {
-						if ( ! isset( $text_field['id'] ) || trim( $text_field['id'] ) == '' ) continue;
-						if ( ! isset( $text_field['default'] ) ) $text_field['default'] = '';
-						if ( ! isset( $text_field['free_version'] ) ) {
-							if ( ! isset( $value['free_version'] ) ) 
-								$text_field['free_version'] = false;
-							else
-								$text_field['free_version'] = $value['free_version'];
-						}
-						
-						// Remove [, ] characters from id argument
-						$key = false;
-						if ( strstr( $text_field['id'], '[' ) ) {
-							parse_str( esc_attr( $text_field['id'] ), $option_array );
-				
-							// Option name is first key
-							$option_keys = array_keys( $option_array );
-							$first_key = current( $option_keys );
-								
-							$id_attribute		= $first_key;
 
-							$key = key( $option_array[ $id_attribute ] );
-						} else {
-							$id_attribute		= esc_attr( $text_field['id'] );
-						}
-						
-						if ( trim( $option_name ) == '' || $value['separate_option'] != false ) {
-							if ( $reset && $text_field['free_version'] && !$free_version ) {
-								if ( $key != false ) {
-									$current_settings = get_option( $id_attribute, array() );
-									if ( ! is_array( $current_settings) ) {
-										$current_settings = array();
-									}
-									$current_settings[$key] = $text_field['default'];
-									update_option( $id_attribute,  $current_settings );
-								} else {
-									update_option( $id_attribute,  $text_field['default'] );
-								}
-							} elseif ( $reset && !$text_field['free_version'] ) {
-								if ( $key != false ) {
-									$current_settings = get_option( $id_attribute, array() );
-									if ( ! is_array( $current_settings) ) {
-										$current_settings = array();
-									}
-									$current_settings[$key] = $text_field['default'];
-									update_option( $id_attribute,  $current_settings );
-								} else {
-									update_option( $id_attribute,  $text_field['default'] );
-								}
-							} else {
-								if ( $key != false ) {
-								$current_settings = get_option( $id_attribute, array() );
-								if ( ! is_array( $current_settings) ) {
-									$current_settings = array();
-								}
-								if ( ! isset( $current_settings[$key] ) ) {
-									$current_settings[$key] = $text_field['default'];
-									update_option( $id_attribute,  $current_settings );
-								}
-								} else {
-									add_option( $id_attribute,  $text_field['default'] );
-								}
-							}
-						}
-					}
+			if ( 'array_textfields' === $value['type'] ) {
+				// Array textfields
+				if ( !isset( $value['ids'] ) || !is_array( $value['ids'] ) || count( $value['ids'] ) < 1 ) continue;
 								
-				break;
-							
-				default :
+				foreach ( $value['ids'] as $text_field ) {
+					if ( ! isset( $text_field['id'] ) || trim( $text_field['id'] ) == '' ) continue;
+					if ( ! isset( $text_field['default'] ) ) $text_field['default'] = '';
+					if ( ! isset( $text_field['free_version'] ) ) {
+						if ( ! isset( $value['free_version'] ) ) 
+							$text_field['free_version'] = false;
+						else
+							$text_field['free_version'] = $value['free_version'];
+					}
+					
 					// Remove [, ] characters from id argument
 					$key = false;
-					if ( strstr( $value['id'], '[' ) ) {
-						parse_str( esc_attr( $value['id'] ), $option_array );
+					if ( strstr( $text_field['id'], '[' ) ) {
+						parse_str( esc_attr( $text_field['id'] ), $option_array );
 			
 						// Option name is first key
 						$option_keys = array_keys( $option_array );
@@ -1022,49 +1133,103 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 
 						$key = key( $option_array[ $id_attribute ] );
 					} else {
-						$id_attribute		= esc_attr( $value['id'] );
+						$id_attribute		= esc_attr( $text_field['id'] );
 					}
 					
 					if ( trim( $option_name ) == '' || $value['separate_option'] != false ) {
-						if ( $reset && $value['free_version'] && !$free_version ) {
+						if ( $reset && $text_field['free_version'] && !$free_version ) {
 							if ( $key != false ) {
 								$current_settings = get_option( $id_attribute, array() );
 								if ( ! is_array( $current_settings) ) {
 									$current_settings = array();
 								}
-								$current_settings[$key] = $value['default'];
+								$current_settings[$key] = $text_field['default'];
 								update_option( $id_attribute,  $current_settings );
 							} else {
-								update_option( $id_attribute,  $value['default'] );
+								update_option( $id_attribute,  $text_field['default'] );
 							}
-						} elseif ( $reset && !$value['free_version'] ) {
+						} elseif ( $reset && !$text_field['free_version'] ) {
 							if ( $key != false ) {
 								$current_settings = get_option( $id_attribute, array() );
 								if ( ! is_array( $current_settings) ) {
 									$current_settings = array();
 								}
-								$current_settings[$key] = $value['default'];
+								$current_settings[$key] = $text_field['default'];
 								update_option( $id_attribute,  $current_settings );
 							} else {
-								update_option( $id_attribute,  $value['default'] );
+								update_option( $id_attribute,  $text_field['default'] );
 							}
 						} else {
 							if ( $key != false ) {
-								$current_settings = get_option( $id_attribute, array() );
-								if ( ! is_array( $current_settings) ) {
-									$current_settings = array();
-								}
-								if ( ! isset( $current_settings[$key] ) ) {
-									$current_settings[$key] = $value['default'];
-									update_option( $id_attribute,  $current_settings );
-								}
+							$current_settings = get_option( $id_attribute, array() );
+							if ( ! is_array( $current_settings) ) {
+								$current_settings = array();
+							}
+							if ( ! isset( $current_settings[$key] ) ) {
+								$current_settings[$key] = $text_field['default'];
+								update_option( $id_attribute,  $current_settings );
+							}
 							} else {
-								add_option( $id_attribute,  $value['default'] );
+								add_option( $id_attribute,  $text_field['default'] );
 							}
 						}
 					}
-							
-				break;
+				}
+			} else {
+				// Remove [, ] characters from id argument
+				$key = false;
+				if ( strstr( $value['id'], '[' ) ) {
+					parse_str( esc_attr( $value['id'] ), $option_array );
+		
+					// Option name is first key
+					$option_keys = array_keys( $option_array );
+					$first_key = current( $option_keys );
+						
+					$id_attribute		= $first_key;
+
+					$key = key( $option_array[ $id_attribute ] );
+				} else {
+					$id_attribute		= esc_attr( $value['id'] );
+				}
+				
+				if ( trim( $option_name ) == '' || $value['separate_option'] != false ) {
+					if ( $reset && $value['free_version'] && !$free_version ) {
+						if ( $key != false ) {
+							$current_settings = get_option( $id_attribute, array() );
+							if ( ! is_array( $current_settings) ) {
+								$current_settings = array();
+							}
+							$current_settings[$key] = $value['default'];
+							update_option( $id_attribute,  $current_settings );
+						} else {
+							update_option( $id_attribute,  $value['default'] );
+						}
+					} elseif ( $reset && !$value['free_version'] ) {
+						if ( $key != false ) {
+							$current_settings = get_option( $id_attribute, array() );
+							if ( ! is_array( $current_settings) ) {
+								$current_settings = array();
+							}
+							$current_settings[$key] = $value['default'];
+							update_option( $id_attribute,  $current_settings );
+						} else {
+							update_option( $id_attribute,  $value['default'] );
+						}
+					} else {
+						if ( $key != false ) {
+							$current_settings = get_option( $id_attribute, array() );
+							if ( ! is_array( $current_settings) ) {
+								$current_settings = array();
+							}
+							if ( ! isset( $current_settings[$key] ) ) {
+								$current_settings[$key] = $value['default'];
+								update_option( $id_attribute,  $current_settings );
+							}
+						} else {
+							add_option( $id_attribute,  $value['default'] );
+						}
+					}
+				}
 			}
 			
 		}
@@ -1121,7 +1286,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 	 * @return void
 	 * ========================================================================
 	 * Option Array Structure :
-	 * type					=> row | column | heading | ajax_submit | ajax_multi_submit | google_api_key | onoff_toggle_box 
+	 * type					=> row | column | heading | ajax_submit | ajax_multi_submit | google_api_key | google_map_api_key | onoff_toggle_box 
 	 * 						   | text | email | number | password | color | bg_color | textarea | select | multiselect | radio | onoff_radio | checkbox | onoff_checkbox 
 	 *						   | switcher_checkbox | image_size | single_select_page | typography | border | border_styles | border_corner | box_shadow 
 	 *						   | slider | upload | wp_editor | array_textfields | time_picker
@@ -1158,6 +1323,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 	 * checked_label		=> text : apply for onoff_checkbox, switcher_checkbox only ( set it to show the text instead ON word default )
 	 * unchecked_label		=> text : apply for onoff_checkbox, switcher_checkbox only ( set it to show the text instead OFF word default  )
 	 * options				=> array : apply for select, multiselect, radio types
+	 * options_url		 	=> url : apply for select, multiselect
 	 *
 	 * onoff_options		=> array : apply for onoff_radio only
 	 *						   ---------------- example ---------------------
@@ -1254,7 +1420,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 	 */
 	 
 	public function admin_forms( $options, $form_key, $option_name = '', $form_messages = array() ) {
-		global $a3_lazy_load_fonts_face, $a3_lazy_load_uploader, $current_subtab;
+		global $current_subtab;
 		
 		$new_settings = array(); $new_single_setting = ''; // :)
 		$admin_message = '';
@@ -1297,7 +1463,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 		if ( !is_array( $options ) || count( $options ) < 1 ) return '';
 		?>
         
-        <?php echo $admin_message; ?>
+        <?php $this->esc_description_e( $admin_message ); ?>
 		<div class="a3rev_panel_container" style="visibility:hidden; height:0; overflow:hidden;" >
         <form action="" method="post">
 		<?php do_action( $this->plugin_name . '-' . trim( $form_key ) . '_settings_start' ); ?>
@@ -1337,11 +1503,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 			if ( ! isset( $value['separate_option'] ) ) $value['separate_option'] = false;
 	
 			// Custom attribute handling
-			$custom_attributes = array();
-	
-			if ( ! empty( $value['custom_attributes'] ) && is_array( $value['custom_attributes'] ) )
-				foreach ( $value['custom_attributes'] as $attribute => $attribute_value )
-					$custom_attributes[] = esc_attr( $attribute ) . '="' . esc_attr( $attribute_value ) . '"';
+			$custom_attributes = isset( $value['custom_attributes'] ) ? $value['custom_attributes'] : array();
 	
 			// Description handling
 			if ( $value['desc_tip'] === true ) {
@@ -1357,10 +1519,10 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 				$description = $tip = '';
 			}
 	
-			if ( $description && in_array( $value['type'], array( 'manual_check_version', 'ajax_submit', 'ajax_multi_submit', 'textarea', 'radio', 'onoff_radio', 'typography', 'border', 'border_styles', 'array_textfields', 'wp_editor', 'upload' ) ) ) {
-				$description = '<div class="desc" style="margin-bottom:5px;">' . $description . '</div>';
+			if ( $description && in_array( $value['type'], array( 'manual_check_version', 'ajax_submit', 'ajax_multi_submit', 'textarea', 'radio', 'onoff_radio', 'typography', 'border', 'border_styles', 'array_textfields', 'wp_editor', 'upload', 'google_api_key', 'google_map_api_key' ) ) ) {
+				$description = '<div class="desc" style="margin-bottom:5px;">' . wptexturize( $description ) . '</div>';
 			} elseif ( $description ) {
-				$description = '<span class="description" style="margin-left:5px;">' . $description . '</span>';
+				$description = '<span class="description" style="margin-left:5px;">' . wptexturize( $description ) . '</span>';
 			}
 			
 			/**
@@ -1453,11 +1615,11 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 	
 			if ( $tip && in_array( $value['type'], array( 'checkbox' ) ) ) {
 	
-				$tip = '<p class="description">' . $tip . '</p>';
+				$tip = '<p class="description">' . wp_kses_post( $tip ) . '</p>';
 	
 			} elseif ( $tip ) {
 	
-				$tip = '<div class="help_tip a3-plugin-ui-icon a3-plugin-ui-help-icon" data-tip="' . esc_attr( $tip ) . '"></div>';
+				$tip = '<div class="help_tip a3-plugin-ui-icon a3-plugin-ui-help-icon" data-trigger="hover" data-content="' . esc_attr( $tip ) . '"></div>';
 	
 			}
 			
@@ -1702,7 +1864,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 							$box_handle_class .= 'box_active';
 						}
 
-						if ( isset( $_GET['box_open'] ) && $_GET['box_open'] == $value['id'] ) {
+						if ( isset( $_GET['box_open'] ) && sanitize_text_field( wp_unslash( $_GET['box_open'] ) ) == $value['id'] ) {
 							$opened_class = 'box_open';
 						}
 
@@ -1710,9 +1872,9 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 						echo '<div id="'. esc_attr( $value['id'] ) . '" class="a3rev_panel_box '. esc_attr( $value['class'] ) .'" style="'. esc_attr( $value['css'] ) .'">' . "\n\n";
 
 						// open box handle
-						echo '<div data-form-key="'. esc_attr( trim( $form_key ) ) .'" data-box-id="'. esc_attr( $heading_box_id ) .'" class="a3rev_panel_box_handle ' . $box_handle_class .'" >' . "\n\n";
+						echo '<div data-form-key="'. esc_attr( trim( $form_key ) ) .'" data-box-id="'. esc_attr( $heading_box_id ) .'" class="a3rev_panel_box_handle ' . esc_attr( $box_handle_class ) .'" >' . "\n\n";
 
-						echo ( ! empty( $value['name'] ) ) ? '<h3 class="a3-plugin-ui-panel-box '. $toggle_box_class . ' ' . $opened_class . '">'. esc_html( $value['name'] ) .' '. $view_doc .'</h3>' : '';
+						echo ( ! empty( $value['name'] ) ) ? '<h3 class="a3-plugin-ui-panel-box '. esc_attr( $toggle_box_class ) . ' ' . esc_attr( $opened_class ) . '">'. wp_kses_post( $value['name'] ) .' '. wp_kses_post( wptexturize( $view_doc ) ) .'</h3>' : '';
 
 						if ( stristr( $value['class'], 'pro_feature_fields' ) !== false && ! empty( $value['id'] ) ) $this->upgrade_top_message( true, sanitize_title( $value['id'] ) );
 						elseif ( stristr( $value['class'], 'pro_feature_fields' ) !== false ) $this->upgrade_top_message( true );
@@ -1721,7 +1883,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 						echo '</div>' . "\n\n";
 
 						// open box inside
-						echo '<div id="'. esc_attr( $value['id'] ) . '_box_inside" class="a3rev_panel_box_inside '.$opened_class.'" >' . "\n\n";
+						echo '<div id="'. esc_attr( $value['id'] ) . '_box_inside" class="a3rev_panel_box_inside '. esc_attr( $opened_class ) .'" >' . "\n\n";
 
 						echo '<div class="a3rev_panel_inner">' . "\n\n";
 
@@ -1738,12 +1900,12 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 						if ( stristr( $value['class'], 'pro_feature_fields' ) !== false && ! empty( $value['id'] ) ) $this->upgrade_top_message( true, sanitize_title( $value['id'] ) );
 						elseif ( stristr( $value['class'], 'pro_feature_fields' ) !== false ) $this->upgrade_top_message( true );
 
-						echo ( ! empty( $value['name'] ) ) ? '<h3>'. esc_html( $value['name'] ) .' '. $view_doc .'</h3>' : '';
+						echo ( ! empty( $value['name'] ) ) ? '<h3>'. wp_kses_post( $value['name'] ) .' '. wp_kses_post( wptexturize( $view_doc ) ) .'</h3>' : '';
 					}
 
 					if ( ! empty( $value['desc'] ) ) {
 						echo '<div class="a3rev_panel_box_description" >' . "\n\n";
-						echo wpautop( wptexturize( $value['desc'] ) );
+						echo wp_kses_post( wpautop( wptexturize( $value['desc'] ) ) );
 						echo '</div>' . "\n\n";
 					}
 
@@ -1764,27 +1926,33 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 
 					?><tr valign="top">
 						<th scope="row" class="titledesc">
-                        	<?php echo $tip; ?>
-							<label for="<?php echo $this->google_api_key_option; ?>"><?php echo __( 'Google Fonts API', 'a3-lazy-load' ); ?></label>
+                        	<?php echo wp_kses_post( $tip ); ?>
+							<label for="<?php echo esc_attr( $this->google_api_key_option ); ?>"><?php esc_html_e( 'Google Fonts API', 'a3-lazy-load' ); ?></label>
 						</th>
-						<td class="forminp forminp-onoff_checkbox forminp-<?php echo sanitize_title( $value['type'] ) ?>">
+						<td class="forminp forminp-onoff_checkbox forminp-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>">
 							<input
-								name="<?php echo $this->google_api_key_option; ?>_enable"
-                                id="<?php echo $this->google_api_key_option; ?>_enable"
+								name="<?php echo esc_attr( $this->google_api_key_option ); ?>_enable"
+                                id="<?php echo esc_attr( $this->google_api_key_option ); ?>_enable"
 								class="a3rev-ui-onoff_checkbox a3rev-ui-onoff_google_api_key_enable"
                                 checked_label="<?php echo esc_html( $value['checked_label'] ); ?>"
                                 unchecked_label="<?php echo esc_html( $value['unchecked_label'] ); ?>"
                                 type="checkbox"
 								value="1"
 								<?php checked( $google_api_key_enable, 1 ); ?>
-								/> <span class="description" style="margin-left:5px;"><?php echo __( 'ON to connect to Google Fonts API and have auto font updates direct from Google.', 'a3-lazy-load' ); ?></span>
+								/> <span class="description" style="margin-left:5px;"><?php esc_html_e( 'ON to connect to Google Fonts API and have auto font updates direct from Google.', 'a3-lazy-load' ); ?></span>
 
 							<div>&nbsp;</div>
 							<div class="a3rev-ui-google-api-key-container" style="<?php if( 1 != $google_api_key_enable ) { echo 'display: none;'; } ?>">
-								<div class="a3rev-ui-google-api-key-description"><?php echo sprintf( __( "Enter your existing Google Fonts API Key below. Don't have a key? Visit <a href='%s' target='_blank'>Google Developer API</a> to create a key", 'a3-lazy-load' ), 'https://developers.google.com/fonts/docs/developer_api#APIKey' ); ?></div>
+								<?php 
+									if ( ! empty( $description ) ) { 
+										$this->esc_description_e( $description );
+									} else {
+								?>
+								<div class="a3rev-ui-google-api-key-description"><?php echo sprintf( __( "Enter your existing Google Fonts API Key below. Don't have a key? Visit <a href='%s' target='_blank'>Google Developer API</a> to create a key" ), 'https://developers.google.com/fonts/docs/developer_api#APIKey' ); ?></div>
+								<?php } ?>
 								<div class="a3rev-ui-google-api-key-inside 
 									<?php
-									if ( $a3_lazy_load_fonts_face->is_valid_google_api_key() ) {
+									if ( $GLOBALS[$this->plugin_prefix.'fonts_face']->is_valid_google_api_key() ) {
 										echo 'a3rev-ui-google-valid-key';
 									} elseif ( '' != $google_api_key ) {
 										echo 'a3rev-ui-google-unvalid-key';
@@ -1792,17 +1960,91 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 									?>
 									">
 									<input
-										name="<?php echo $this->google_api_key_option; ?>"
-										id="<?php echo $this->google_api_key_option; ?>"
+										data-type="font"
+										name="<?php echo esc_attr( $this->google_api_key_option ); ?>"
+										id="<?php echo esc_attr( $this->google_api_key_option ); ?>"
 										type="text"
 										style="<?php echo esc_attr( $value['css'] ); ?>"
 										value="<?php echo esc_attr( $google_api_key ); ?>"
-										class="a3rev-ui-text a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?> <?php echo esc_attr( $value['class'] ); ?>"
-		                                placeholder="<?php echo __( 'Google Fonts API Key', 'a3-lazy-load' ); ?>"
-										<?php echo implode( ' ', $custom_attributes ); ?>
+										class="a3rev-ui-text a3rev-ui-google-api-key a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?> <?php echo esc_attr( $value['class'] ); ?>"
+		                                placeholder="<?php esc_attr_e( 'Google Fonts API Key' ); ?>"
+										<?php $this->esc_attribute_array_e( $custom_attributes ); // WPCS: XSS ok. ?>
 										/>
-									<p class="a3rev-ui-google-valid-key-message"><?php echo __( 'Your Google API Key is valid and automatic font updates are enabled.', 'a3-lazy-load' ); ?></p>
-									<p class="a3rev-ui-google-unvalid-key-message"><?php echo __( 'Please enter a valid Google API Key.', 'a3-lazy-load' ); ?></p>
+									<button
+									name="<?php echo esc_attr( $this->google_api_key_option ); ?>_validate_bt"
+									id="<?php echo esc_attr( $this->google_api_key_option ); ?>_validate_bt"
+									type="button"
+									class="a3rev-ui-google-api-key-validate-button a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>-button"><?php esc_html_e( 'Validate' ); ?></button>
+									<p class="a3rev-ui-google-valid-key-message"><?php esc_html_e( 'Your Google API Key is valid and automatic font updates are enabled.' ); ?></p>
+									<p class="a3rev-ui-google-unvalid-key-message"><?php esc_html_e( 'Please enter a valid Google API Key.' ); ?></p>
+								</div>
+							</div>
+						</td>
+					</tr><?php
+
+				break;
+
+				// Google Map API Key input
+				case 'google_map_api_key':
+
+					$google_map_api_key        = $this->settings_get_option( $this->google_map_api_key_option );
+					$google_map_api_key_enable = $this->settings_get_option( $this->google_map_api_key_option . '_enable', 0 );
+					if ( ! isset( $value['checked_label'] ) ) $value['checked_label'] = __( 'ON', 'a3-lazy-load' );
+					if ( ! isset( $value['unchecked_label'] ) ) $value['unchecked_label'] = __( 'OFF', 'a3-lazy-load' );
+
+					?><tr valign="top">
+						<th scope="row" class="titledesc">
+                        	<?php echo wp_kses_post( $tip ); ?>
+							<label for="<?php echo esc_attr( $this->google_map_api_key_option ); ?>"><?php esc_html_e( 'Google Maps API', 'a3-lazy-load' ); ?></label>
+						</th>
+						<td class="forminp forminp-onoff_checkbox forminp-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>">
+							<input
+								name="<?php echo esc_attr( $this->google_map_api_key_option ); ?>_enable"
+                                id="<?php echo esc_attr( $this->google_map_api_key_option ); ?>_enable"
+								class="a3rev-ui-onoff_checkbox a3rev-ui-onoff_google_api_key_enable"
+                                checked_label="<?php echo esc_html( $value['checked_label'] ); ?>"
+                                unchecked_label="<?php echo esc_html( $value['unchecked_label'] ); ?>"
+                                type="checkbox"
+								value="1"
+								<?php checked( $google_map_api_key_enable, 1 ); ?>
+								/> <span class="description" style="margin-left:5px;"><?php esc_html_e( 'Switch ON to connect to Google Maps API', 'a3-lazy-load' ); ?></span>
+
+							<div>&nbsp;</div>
+							<div class="a3rev-ui-google-api-key-container" style="<?php if( 1 != $google_map_api_key_enable ) { echo 'display: none;'; } ?>">
+							<?php 
+								if ( ! empty( $description ) ) { 
+									$this->esc_description_e( $description ); 
+								} else {
+							?>
+								<div class="a3rev-ui-google-api-key-description" style="margin-bottom:5px;"><?php echo sprintf( __( "Enter your Google Maps API Key and save changes, or go to <a href='%s' target='_blank'>Google Maps API</a> to create a new key. The key must have the Geocoding API, Maps Embed API and Maps JavaScript API as a minimum." ), 'https://developers.google.com/maps/documentation/javascript/get-api-key' ); ?></div>
+							<?php } ?>
+								<div class="a3rev-ui-google-api-key-inside 
+									<?php
+									if ( $this->is_valid_google_map_api_key() ) {
+										echo 'a3rev-ui-google-valid-key';
+									} elseif ( '' != $google_map_api_key ) {
+										echo 'a3rev-ui-google-unvalid-key';
+									}
+									?>
+									">
+									<input
+										data-type="map"
+										name="<?php echo esc_attr( $this->google_map_api_key_option ); ?>"
+										id="<?php echo esc_attr( $this->google_map_api_key_option ); ?>"
+										type="text"
+										style="<?php echo esc_attr( $value['css'] ); ?>"
+										value="<?php echo esc_attr( $google_map_api_key ); ?>"
+										class="a3rev-ui-text a3rev-ui-google-api-key a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?> <?php echo esc_attr( $value['class'] ); ?>"
+		                                placeholder="<?php esc_attr_e( 'Google Map API Key' ); ?>"
+										<?php $this->esc_attribute_array_e( $custom_attributes ); // WPCS: XSS ok. ?>
+										/>
+									<button
+									name="<?php echo esc_attr( $this->google_map_api_key_option ); ?>_validate_bt"
+									id="<?php echo esc_attr( $this->google_map_api_key_option ); ?>_validate_bt"
+									type="button"
+									class="a3rev-ui-google-api-key-validate-button a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>-button"><?php esc_html_e( 'Validate' ); ?></button>
+									<p class="a3rev-ui-google-valid-key-message"><?php esc_html_e( 'Your Google API Key is valid.' ); ?></p>
+									<p class="a3rev-ui-google-unvalid-key-message"><?php esc_html_e( 'Please enter a valid Google API Key.' ); ?></p>
 								</div>
 							</div>
 						</td>
@@ -1834,7 +2076,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 
 					?><tr valign="top">
 						<td colspan="2">
-							<p class="a3rev-ui-check-version-message <?php echo $check_version_class; ?>"><?php echo $version_message; ?></p>
+							<p class="a3rev-ui-check-version-message <?php echo esc_attr( $check_version_class ); ?>"><?php $this->esc_description_e( $version_message ); ?></p>
 						</td>
 					</tr><?php
 
@@ -1846,35 +2088,36 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 					$progressing_text = $value['progressing_text'];
 					$completed_text   = $value['completed_text'];
 					$successed_text   = $value['successed_text'];
+					$errors_text      = $value['errors_text'];
 					$submit_data      = json_encode( $value['submit_data'] );
 
 					?><tr valign="top">
-						<th scope="row" class="titledesc"><?php echo $tip; ?><?php echo esc_html( $value['name'] ) ?></th>
+						<th scope="row" class="titledesc"><?php echo wp_kses_post( $tip ); ?><?php echo wp_kses_post( $value['name'] ); ?></th>
 						<td class="forminp">
 
-                            <div class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?>-control">
+                            <div class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>-control">
 
 								<button
-									name="<?php echo $name_attribute; ?>"
-									id="<?php echo $id_attribute; ?>"
+									name="<?php $this->esc_attribute_name_e( $name_attribute ); // WPCS: XSS ok. ?>"
+									id="<?php echo esc_attr( $id_attribute ); ?>"
 									data-submit_data="<?php echo esc_attr( $submit_data ); ?>"
 									type="button"
-									class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?>-button <?php echo esc_attr( $value['class'] ); ?>"
+									class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>-button <?php echo esc_attr( $value['class'] ); ?>"
 									style="<?php echo esc_attr( $value['css'] ); ?>"
-									<?php echo implode( ' ', $custom_attributes ); ?>
-								><?php echo $button_name; ?></button>
-								<span class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?>-successed"><?php echo $successed_text; ?></span>
-								<span class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?>-errors"></span>
+									<?php $this->esc_attribute_array_e( $custom_attributes ); // WPCS: XSS ok. ?>
+								><?php echo esc_html( $button_name ); ?></button>
+								<span class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>-successed"><?php echo esc_html( $successed_text ); ?></span>
+								<span class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>-errors"><?php echo esc_html( $errors_text ); ?></span>
 
 								<!-- Progress Bar -->
 								<div class="a3rev-ui-progress-bar-wrap">
 									<div class="a3rev-ui-progress-inner"></div>
-									<div class="a3rev-ui-progressing-text"><?php echo $progressing_text; ?></div>
-									<div class="a3rev-ui-completed-text"><?php echo $completed_text; ?></div>
+									<div class="a3rev-ui-progressing-text"><?php echo esc_html( $progressing_text ); ?></div>
+									<div class="a3rev-ui-completed-text"><?php echo esc_html( $completed_text ); ?></div>
 								</div>
 
                            </div>
-                           <?php echo $description; ?>
+                           <?php $this->esc_description_e( $description ); ?>
 						</td>
 					</tr><?php
 
@@ -1887,7 +2130,14 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 					$progressing_text = $value['progressing_text'];
 					$completed_text   = $value['completed_text'];
 					$successed_text   = $value['successed_text'];
+					$errors_text      = $value['errors_text'];
 					$statistic_column = isset( $value['statistic_column'] ) ? $value['statistic_column'] : 1;
+
+					$notice          = isset( $value['notice'] ) ? $value['notice'] : '';
+					$confirm_message = '';
+					if ( isset( $value['confirm_run'] ) && $value['confirm_run']['allow'] ) {
+						$confirm_message = isset( $value['confirm_run']['message'] ) ? $value['confirm_run']['message'] : '';
+					}
 
 					$multi_current_items = 0;
 					$multi_total_items   = 0;
@@ -1915,29 +2165,35 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 					$multi_ajax = json_encode( $multi_ajax );
 
 					?><tr valign="top">
-						<th scope="row" class="titledesc"><?php echo $tip; ?><?php echo esc_html( $value['name'] ) ?></th>
+						<th scope="row" class="titledesc"><?php echo wp_kses_post( $tip ); ?><?php echo wp_kses_post( $value['name'] ); ?></th>
 						<td class="forminp">
 
-                            <div class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?>-control">
-								<?php echo $description; ?>
+                            <div class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>-control">
+								<?php $this->esc_description_e( $description ); ?>
 								<button
 									data-resubmit="<?php echo $resubmit ? 1 : 0 ; ?>"
-									name="<?php echo $name_attribute; ?>"
-									id="<?php echo $id_attribute; ?>"
+									name="<?php $this->esc_attribute_name_e( $name_attribute ); // WPCS: XSS ok. ?>"
+									id="<?php echo esc_attr( $id_attribute ); ?>"
 									data-multi_ajax="<?php echo esc_attr( $multi_ajax ); ?>"
 									type="button"
-									class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?>-button <?php echo esc_attr( $value['class'] ); ?>"
+									class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>-button <?php echo esc_attr( $value['class'] ); ?>"
 									style="<?php echo esc_attr( $value['css'] ); ?>"
-									<?php echo implode( ' ', $custom_attributes ); ?>
-								><?php echo $button_name; ?></button>
-								<span class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?>-successed"><?php echo $successed_text; ?></span>
-								<span class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?>-errors"></span>
+									<?php $this->esc_attribute_array_e( $custom_attributes ); // WPCS: XSS ok. ?>
+								<?php if ( ! empty( $confirm_message ) ) { ?>
+									data-confirm_message="<?php echo esc_attr( $confirm_message ); ?>"
+								<?php } ?> 
+								><?php echo esc_html( $button_name ); ?></button>
+								<span class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>-successed"><?php echo wp_kses_post( wptexturize( $successed_text ) ); ?></span>
+								<span class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>-errors"><?php echo wp_kses_post( wptexturize( $errors_text ) ); ?></span>
 
 								<!-- Progress Bar -->
+								<?php if ( ! empty( $notice ) ) { ?>
+								<div class="a3rev-ui-progress-notice"><?php echo esc_html( $notice ); ?></div>
+								<?php } ?>
 								<div class="a3rev-ui-progress-bar-wrap">
-									<div class="a3rev-ui-progress-inner" data-current="<?php echo $multi_current_items; ?>" data-total="<?php echo $multi_total_items; ?>" ></div>
-									<div class="a3rev-ui-progressing-text"><?php echo $progressing_text; ?></div>
-									<div class="a3rev-ui-completed-text"><?php echo $completed_text; ?></div>
+									<div class="a3rev-ui-progress-inner" data-current="<?php echo esc_attr( $multi_current_items ); ?>" data-total="<?php echo esc_attr( $multi_total_items ); ?>" ></div>
+									<div class="a3rev-ui-progressing-text"><?php echo esc_html( $progressing_text ); ?></div>
+									<div class="a3rev-ui-completed-text"><?php echo esc_html( $completed_text ); ?></div>
 								</div>
 								<div style="clear: both;"></div>
 
@@ -1971,20 +2227,20 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 											$current_color = isset( $statistic_customizer['current_color'] ) ? $statistic_customizer['current_color'] : '';
 										}
 								?>
-									<div style="<?php echo ( isset( $single_submit['show_statistic'] ) && ! $single_submit['show_statistic'] ) ? 'display:none;' : ''; ?> width: <?php echo $column_width; ?>%;" class="a3rev-ui-statistic-item a3rev-ui-statistic-<?php echo esc_attr( $single_submit['item_id'] ); ?>">
+									<div style="<?php echo ( isset( $single_submit['show_statistic'] ) && ! $single_submit['show_statistic'] ) ? 'display:none;' : ''; ?> width: <?php echo esc_attr( $column_width ); ?>%;" class="a3rev-ui-statistic-item a3rev-ui-statistic-<?php echo esc_attr( $single_submit['item_id'] ); ?>">
 										<div class="a3rev-ui-pie-wrap">
 											<div class="a3rev-ui-pie <?php echo esc_attr( $pie_class); ?>">
-												<div class="a3rev-ui-pie-left-side a3rev-ui-pie-half-circle" style="transform: rotate(<?php echo $left_deg; ?>deg); <?php echo ( ! empty( $current_color ) ? 'border-color:' . $current_color : '' ); ?>"></div>
-												<div class="a3rev-ui-pie-right-side a3rev-ui-pie-half-circle" style="transform: rotate(<?php echo $right_deg; ?>deg); <?php echo ( ! empty( $current_color ) ? 'border-color:' . $current_color : '' ); ?>"></div>
+												<div class="a3rev-ui-pie-left-side a3rev-ui-pie-half-circle" style="transform: rotate(<?php echo esc_attr( $left_deg ); ?>deg); <?php echo ( ! empty( $current_color ) ? 'border-color:' . esc_attr( $current_color ) : '' ); ?>"></div>
+												<div class="a3rev-ui-pie-right-side a3rev-ui-pie-half-circle" style="transform: rotate(<?php echo esc_attr( $right_deg ); ?>deg); <?php echo ( ! empty( $current_color ) ? 'border-color:' . esc_attr( $current_color ) : '' ); ?>"></div>
 											</div>
 											<div class="a3rev-ui-pie-shadow"></div>
 										</div>
 										<div class="a3rev-ui-statistic-text">
-											<span class="a3rev-ui-statistic-current-item" data-current="<?php echo $current_items; ?>" ><?php echo $current_items; ?></span>
+											<span class="a3rev-ui-statistic-current-item" data-current="<?php echo esc_attr( $current_items ); ?>" ><?php echo esc_html( $current_items ); ?></span>
 											<span class="a3rev-ui-statistic-separate">/</span>
-											<span class="a3rev-ui-statistic-total-item"><?php echo $total_items; ?></span>
+											<span class="a3rev-ui-statistic-total-item"><?php echo esc_html( $total_items ); ?></span>
 											<br />
-											<span class="a3rev-ui-statistic-item-name"><?php echo $single_submit['item_name']; ?></span>
+											<span class="a3rev-ui-statistic-item-name"><?php echo wp_kses_post( wptexturize( $single_submit['item_name'] ) ); ?></span>
 										</div>
 									</div>
 								<?php
@@ -2007,21 +2263,21 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 
 					?><tr valign="top">
 						<th scope="row" class="titledesc">
-                        	<?php echo $tip; ?>
-							<label for="<?php echo $this->toggle_box_open_option; ?>"><?php echo __( 'Open Box Display', 'a3-lazy-load' ); ?></label>
+                        	<?php echo wp_kses_post( $tip ); ?>
+							<label for="<?php echo esc_attr( $this->toggle_box_open_option ); ?>"><?php esc_html_e( 'Open Box Display', 'a3-lazy-load' ); ?></label>
 						</th>
-						<td class="forminp forminp-onoff_checkbox forminp-<?php echo sanitize_title( $value['type'] ) ?>">
+						<td class="forminp forminp-onoff_checkbox forminp-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>">
 							<input
-								name="<?php echo $this->toggle_box_open_option; ?>"
-                                id="<?php echo $this->toggle_box_open_option; ?>"
+								name="<?php echo esc_attr( $this->toggle_box_open_option ); ?>"
+                                id="<?php echo esc_attr( $this->toggle_box_open_option ); ?>"
 								class="a3rev-ui-onoff_checkbox a3rev-ui-onoff_toggle_box <?php echo esc_attr( $value['class'] ); ?>"
                                 checked_label="<?php echo esc_html( $value['checked_label'] ); ?>"
                                 unchecked_label="<?php echo esc_html( $value['unchecked_label'] ); ?>"
                                 type="checkbox"
 								value="1"
 								<?php checked( $option_value, 1 ); ?>
-								<?php echo implode( ' ', $custom_attributes ); ?>
-								/> <span class="description" style="margin-left:5px;"><?php echo __( 'ON and each admin panel setting box OPEN | CLOSED position are saved each time changes are SAVED.', 'a3-lazy-load' ); ?></span>
+								<?php $this->esc_attribute_array_e( $custom_attributes ); // WPCS: XSS ok. ?>
+								/> <span class="description" style="margin-left:5px;"><?php esc_html_e( 'ON and each admin panel setting box OPEN | CLOSED position are saved each time changes are SAVED.', 'a3-lazy-load' ); ?></span>
                         </td>
 					</tr><?php
 				break;
@@ -2036,20 +2292,20 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 	
 					?><tr valign="top">
 						<th scope="row" class="titledesc">
-                        	<?php echo $tip; ?>
-							<label for="<?php echo $id_attribute; ?>"><?php echo esc_html( $value['name'] ); ?></label>
+                        	<?php echo wp_kses_post( $tip ); ?>
+							<label for="<?php echo esc_attr( $id_attribute ); ?>"><?php echo wp_kses_post( $value['name'] ); ?></label>
 						</th>
-						<td class="forminp forminp-<?php echo sanitize_title( $value['type'] ) ?>">
+						<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>">
 							<input
-								name="<?php echo $name_attribute; ?>"
-								id="<?php echo $id_attribute; ?>"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); // WPCS: XSS ok. ?>"
+								id="<?php echo esc_attr( $id_attribute ); ?>"
 								type="<?php echo esc_attr( $type ); ?>"
 								style="<?php echo esc_attr( $value['css'] ); ?>"
 								value="<?php echo esc_attr( $option_value ); ?>"
-								class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?> <?php echo esc_attr( $value['class'] ); ?>"
+								class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?> <?php echo esc_attr( $value['class'] ); ?>"
                                 placeholder="<?php echo esc_attr( $value['placeholder'] ); ?>"
-								<?php echo implode( ' ', $custom_attributes ); ?>
-								/> <?php echo $description; ?>
+								<?php $this->esc_attribute_array_e( $custom_attributes ); // WPCS: XSS ok. ?>
+								/> <?php $this->esc_description_e( $description ); ?>
 						</td>
 					</tr><?php
 				break;
@@ -2058,23 +2314,22 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 				case 'color' :
 					
 					if ( trim( $value['default'] ) == '' ) $value['default'] = '#515151';
-					$default_color = ' data-default-color="' . esc_attr( $value['default'] ) . '"';
 					if ( '' == trim( $option_value ) ) $option_value = 'transparent';
 
 					?><tr valign="top">
 						<th scope="row" class="titledesc">
-                        	<?php echo $tip; ?>
-							<label for="<?php echo $id_attribute; ?>"><?php echo esc_html( $value['name'] ); ?></label>
+                        	<?php echo wp_kses_post( $tip ); ?>
+							<label for="<?php echo esc_attr( $id_attribute ); ?>"><?php echo wp_kses_post( $value['name'] ); ?></label>
 						</th>
-						<td class="forminp forminp-<?php echo sanitize_title( $value['type'] ) ?>">
+						<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>">
 							<input
-								name="<?php echo $name_attribute; ?>"
-								id="<?php echo $id_attribute; ?>"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); // WPCS: XSS ok. ?>"
+								id="<?php echo esc_attr( $id_attribute ); ?>"
 								type="text"
 								value="<?php echo esc_attr( $option_value ); ?>"
 								class="a3rev-color-picker"
-								<?php echo $default_color; ?>
-								/> <?php echo $description; ?>
+								data-default-color="<?php echo esc_attr( $value['default'] ); ?>"
+								/> <?php $this->esc_description_e( $description ); ?>
 						</td>
 					</tr><?php
 
@@ -2087,37 +2342,36 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 					$enable		= $option_value['enable'];
 
 					if ( trim( $value['default']['color'] ) == '' ) $value['default']['color'] = '#515151';
-					$default_color = ' data-default-color="' . esc_attr( $value['default']['color'] ) . '"';
 
 					$color = $option_value['color'];
 					if ( '' == trim( $color ) ) $color = 'transparent';
 
 					?><tr valign="top">
 						<th scope="row" class="titledesc">
-							<?php echo $tip; ?>
-							<label for="<?php echo $id_attribute; ?>"><?php echo esc_html( $value['name'] ); ?></label>
+							<?php echo wp_kses_post( $tip ); ?>
+							<label for="<?php echo esc_attr( $id_attribute ); ?>"><?php echo wp_kses_post( $value['name'] ); ?></label>
 						</th>
-						<td class="forminp forminp-<?php echo sanitize_title( $value['type'] ) ?>">
+						<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>">
 							<input
-									name="<?php echo $name_attribute; ?>[enable]"
-									id="<?php echo $id_attribute; ?>"
+									name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[enable]"
+									id="<?php echo esc_attr( $id_attribute ); ?>"
 									class="a3rev-ui-bg_color-enable a3rev-ui-onoff_checkbox <?php echo esc_attr( $value['class'] ); ?>"
-									checked_label="<?php _e( 'ON', 'a3-lazy-load' ); ?>"
-									unchecked_label="<?php _e( 'OFF', 'a3-lazy-load' ); ?>"
+									checked_label="<?php esc_attr_e( 'ON', 'a3-lazy-load' ); ?>"
+									unchecked_label="<?php esc_attr_e( 'OFF', 'a3-lazy-load' ); ?>"
 									type="checkbox"
 									value="1"
 									<?php checked( 1, $enable ); ?>
-									<?php echo implode( ' ', $custom_attributes ); ?>
-								/> <?php echo $description; ?>
+									<?php $this->esc_attribute_array_e( $custom_attributes ); // WPCS: XSS ok. ?>
+								/> <?php $this->esc_description_e( $description ); ?>
 							<div style="clear:both;"></div>
 							<div class="a3rev-ui-bg_color-enable-container">
 							<input
-								name="<?php echo $name_attribute; ?>[color]"
-								id="<?php echo $id_attribute; ?>-color"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[color]"
+								id="<?php echo esc_attr( $id_attribute ); ?>-color"
 								type="text"
 								value="<?php echo esc_attr( $color ); ?>"
 								class="a3rev-color-picker"
-								<?php echo $default_color; ?>
+								data-default-color="<?php echo esc_attr( $value['default']['color'] ); ?>"
 								/>
 							</div>
 						</td>
@@ -2130,19 +2384,19 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 
 					?><tr valign="top">
 						<th scope="row" class="titledesc">
-                        	<?php echo $tip; ?>
-							<label for="<?php echo $id_attribute; ?>"><?php echo esc_html( $value['name'] ); ?></label>
+                        	<?php echo wp_kses_post( $tip ); ?>
+							<label for="<?php echo esc_attr( $id_attribute ); ?>"><?php echo wp_kses_post( $value['name'] ); ?></label>
 						</th>
-						<td class="forminp forminp-<?php echo sanitize_title( $value['type'] ) ?>">
-							<?php echo $description; ?>
+						<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>">
+							<?php $this->esc_description_e( $description ); ?>
 	
 							<textarea
-								name="<?php echo $name_attribute; ?>"
-								id="<?php echo $id_attribute; ?>"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); // WPCS: XSS ok. ?>"
+								id="<?php echo esc_attr( $id_attribute ); ?>"
 								style="<?php echo esc_attr( $value['css'] ); ?>"
-								class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?> <?php echo esc_attr( $value['class'] ); ?>"
+								class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?> <?php echo esc_attr( $value['class'] ); ?>"
                                 placeholder="<?php echo esc_attr( $value['placeholder'] ); ?>"
-								<?php echo implode( ' ', $custom_attributes ); ?>
+								<?php $this->esc_attribute_array_e( $custom_attributes ); // WPCS: XSS ok. ?>
 								><?php echo esc_textarea( $option_value );  ?></textarea>
 						</td>
 					</tr><?php
@@ -2157,21 +2411,32 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 						$value['class'] .= ' chzn-rtl';
 					}
 					if ( ! isset( $value['options'] ) ) $value['options'] = array();
+
+					$is_ajax = false;
+					if ( isset( $value['options_url'] ) && ! empty( $value['options_url'] ) ) {
+						$is_ajax = true;
+						$value['class'] .= ' chzn-select-ajaxify';
+					}
 		
 					?><tr valign="top">
 						<th scope="row" class="titledesc">
-                        	<?php echo $tip; ?>
-							<label for="<?php echo $id_attribute; ?>"><?php echo esc_html( $value['name'] ); ?></label>
+                        	<?php echo wp_kses_post( $tip ); ?>
+							<label for="<?php echo esc_attr( $id_attribute ); ?>"><?php echo wp_kses_post( $value['name'] ); ?></label>
 						</th>
-						<td class="forminp forminp-<?php echo sanitize_title( $value['type'] ) ?>">
+						<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>">
 							<select
-								name="<?php echo $name_attribute; ?><?php if ( $value['type'] == 'multiselect' ) echo '[]'; ?>"
-								id="<?php echo $id_attribute; ?>"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); // WPCS: XSS ok. ?><?php if ( $value['type'] == 'multiselect' ) echo '[]'; ?>"
+								id="<?php echo esc_attr( $id_attribute ); ?>"
 								style="<?php echo esc_attr( $value['css'] ); ?>"
-								class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?> <?php echo esc_attr( $value['class'] ); ?>"
+								class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?> <?php echo esc_attr( $value['class'] ); ?>"
 								data-placeholder="<?php echo esc_html( $value['placeholder'] ); ?>"
-								<?php echo implode( ' ', $custom_attributes ); ?>
+								<?php $this->esc_attribute_array_e( $custom_attributes ); // WPCS: XSS ok. ?>
 								<?php if ( $value['type'] == 'multiselect' ) echo 'multiple="multiple"'; ?>
+								<?php if ( $is_ajax ) {
+									echo 'options_url="'.esc_url( $value['options_url'] ).'"';
+									echo 'data-no_results_text="Please enter 3 or more characters"';
+								}
+								?>
 								>
 								<?php
 								if ( is_array( $value['options'] ) && count( $value['options'] ) > 0 ) {
@@ -2189,7 +2454,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 												else
 													selected( $option_value, $sub_key );
 		
-											?>><?php echo $sub_val ?></option>
+											?>><?php echo esc_html( $sub_val ); ?></option>
 										<?php
 											}
 										?>
@@ -2204,13 +2469,13 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 											else
 												selected( $option_value, $key );
 	
-										?>><?php echo $val ?></option>
+										?>><?php echo esc_html( $val ); ?></option>
 										<?php
 										}
 									}
 								}
 								?>
-						   </select> <?php echo $description; ?>
+						   </select> <?php $this->esc_description_e( $description ); ?>
 						</td>
 					</tr><?php
 				break;
@@ -2222,12 +2487,12 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 	
 					?><tr valign="top">
 						<th scope="row" class="titledesc">
-                        	<?php echo $tip; ?>
-							<label for="<?php echo $id_attribute; ?>"><?php echo esc_html( $value['name'] ); ?></label>
+                        	<?php echo wp_kses_post( $tip ); ?>
+							<label for="<?php echo esc_attr( $id_attribute ); ?>"><?php echo wp_kses_post( $value['name'] ); ?></label>
 						</th>
-						<td class="forminp forminp-<?php echo sanitize_title( $value['type'] ) ?>">
+						<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>">
 							<fieldset>
-								<?php echo $description; ?>
+								<?php $this->esc_description_e( $description ); ?>
 								<ul>
 								<?php
 								if ( is_array( $value['options'] ) && count( $value['options'] ) > 0 ) {
@@ -2235,14 +2500,14 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 										?>
 										<li>
 											<label><input
-												name="<?php echo $name_attribute; ?>"
-												value="<?php echo $val; ?>"
+												name="<?php $this->esc_attribute_name_e( $name_attribute ); // WPCS: XSS ok. ?>"
+												value="<?php echo esc_attr( $val ); ?>"
 												type="radio"
 												style="<?php echo esc_attr( $value['css'] ); ?>"
-												class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?> <?php echo esc_attr( $value['class'] ); ?>"
-												<?php echo implode( ' ', $custom_attributes ); ?>
+												class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?> <?php echo esc_attr( $value['class'] ); ?>"
+												<?php $this->esc_attribute_array_e( $custom_attributes ); // WPCS: XSS ok. ?>
 												<?php checked( $val, $option_value ); ?>
-												/> <span class="description" style="margin-left:5px;"><?php echo $text ?></span></label>
+												/> <span class="description" style="margin-left:5px;"><?php echo wp_kses_post( $text ); ?></span></label>
 										</li>
 										<?php
 									}
@@ -2261,12 +2526,12 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 	
 					?><tr valign="top">
 						<th scope="row" class="titledesc">
-                        	<?php echo $tip; ?>
-							<label for="<?php echo $id_attribute; ?>"><?php echo esc_html( $value['name'] ); ?></label>
+                        	<?php echo wp_kses_post( $tip ); ?>
+							<label for="<?php echo esc_attr( $id_attribute ); ?>"><?php echo wp_kses_post( $value['name'] ); ?></label>
 						</th>
-						<td class="forminp forminp-<?php echo sanitize_title( $value['type'] ) ?>">
+						<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>">
 							<fieldset>
-								<?php echo $description; ?>
+								<?php $this->esc_description_e( $description ); ?>
 								<ul>
 								<?php
 								if ( is_array( $value['onoff_options'] ) && count( $value['onoff_options'] ) > 0 ) {
@@ -2278,7 +2543,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 										?>
 										<li>
                                             <input
-                                                name="<?php echo $name_attribute; ?>"
+                                                name="<?php $this->esc_attribute_name_e( $name_attribute ); // WPCS: XSS ok. ?>"
                                                 <?php if ( $i_option['val'] == $option_value ) echo ' checkbox-disabled="true" ' ; ?>
                                                 class="a3rev-ui-onoff_radio <?php echo esc_attr( $value['class'] ); ?>"
                                                 checked_label="<?php echo esc_html( $i_option['checked_label'] ); ?>"
@@ -2286,8 +2551,8 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
                                                 type="radio"
                                                 value="<?php echo esc_attr( stripslashes( $i_option['val'] ) ); ?>"
                                                 <?php checked( esc_attr( stripslashes( $i_option['val'] ) ), $option_value ); ?>
-                                                <?php echo implode( ' ', $custom_attributes ); ?>
-                                                /> <span class="description" style="margin-left:5px;"><?php echo $i_option['text'] ?></span>
+                                                <?php $this->esc_attribute_array_e( $custom_attributes ); // WPCS: XSS ok. ?>
+                                                /> <span class="description" style="margin-left:5px;"><?php echo wp_kses_post( wptexturize( $i_option['text'] ) ); ?></span>
 										</li>
 										<?php
 									}
@@ -2314,7 +2579,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 							if ( $value['show_if_checked'] == 'option' ) echo 'show_options_if_checked';
 						?>">
 						<th scope="row" class="titledesc">
-                        	<label for="<?php echo $id_attribute; ?>"><?php echo esc_html( $value['name'] ); ?></label>
+                        	<label for="<?php echo esc_attr( $id_attribute ); ?>"><?php echo wp_kses_post( $value['name'] ); ?></label>
                         </th>
 						<td class="forminp forminp-checkbox">
 							<fieldset>
@@ -2330,17 +2595,17 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 					}
 	
 					?>
-						<legend class="screen-reader-text"><span><?php echo esc_html( $value['name'] ) ?></span></legend>
+						<legend class="screen-reader-text"><span><?php echo wp_kses_post( $value['name'] ); ?></span></legend>
 	
-						<label for="<?php echo $id_attribute; ?>">
+						<label for="<?php echo esc_attr( $id_attribute ); ?>">
 						<input
-							name="<?php echo $name_attribute; ?>"
-							id="<?php echo $id_attribute; ?>"
+							name="<?php $this->esc_attribute_name_e( $name_attribute ); // WPCS: XSS ok. ?>"
+							id="<?php echo esc_attr( $id_attribute ); ?>"
 							type="checkbox"
 							value="<?php echo esc_attr( stripslashes( $value['checked_value'] ) ); ?>"
 							<?php checked( $option_value, esc_attr( stripslashes( $value['checked_value'] ) ) ); ?>
-							<?php echo implode( ' ', $custom_attributes ); ?>
-						/> <?php echo $description; ?></label> <?php echo $tip; ?>
+							<?php $this->esc_attribute_array_e( $custom_attributes ); // WPCS: XSS ok. ?>
+						/> <?php $this->esc_description_e( $description ); ?></label> <?php echo wp_kses_post( $tip ); ?>
 					<?php
 	
 					if ( ! isset( $value['checkboxgroup'] ) || ( isset( $value['checkboxgroup'] ) && $value['checkboxgroup'] == 'end' ) ) {
@@ -2366,21 +2631,21 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 		
 					?><tr valign="top">
 						<th scope="row" class="titledesc">
-                        	<?php echo $tip; ?>
-							<label for="<?php echo $id_attribute; ?>"><?php echo esc_html( $value['name'] ); ?></label>
+                        	<?php echo wp_kses_post( $tip ); ?>
+							<label for="<?php echo esc_attr( $id_attribute ); ?>"><?php echo wp_kses_post( $value['name'] ); ?></label>
 						</th>
-						<td class="forminp forminp-<?php echo sanitize_title( $value['type'] ) ?>">
+						<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>">
 							<input
-								name="<?php echo $name_attribute; ?>"
-                                id="<?php echo $id_attribute; ?>"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); // WPCS: XSS ok. ?>"
+                                id="<?php echo esc_attr( $id_attribute ); ?>"
 								class="a3rev-ui-onoff_checkbox <?php echo esc_attr( $value['class'] ); ?>"
                                 checked_label="<?php echo esc_html( $value['checked_label'] ); ?>"
                                 unchecked_label="<?php echo esc_html( $value['unchecked_label'] ); ?>"
                                 type="checkbox"
 								value="<?php echo esc_attr( stripslashes( $value['checked_value'] ) ); ?>"
 								<?php checked( $option_value, esc_attr( stripslashes( $value['checked_value'] ) ) ); ?>
-								<?php echo implode( ' ', $custom_attributes ); ?>
-								/> <?php echo $description; ?>
+								<?php $this->esc_attribute_array_e( $custom_attributes ); // WPCS: XSS ok. ?>
+								/> <?php $this->esc_description_e( $description ); ?>
                         </td>
 					</tr><?php
 	
@@ -2395,21 +2660,21 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 		
 					?><tr valign="top">
 						<th scope="row" class="titledesc">
-                        	<?php echo $tip; ?>
-							<label for="<?php echo $id_attribute; ?>"><?php echo esc_html( $value['name'] ); ?></label>
+                        	<?php echo wp_kses_post( $tip ); ?>
+							<label for="<?php echo esc_attr( $id_attribute ); ?>"><?php echo wp_kses_post( $value['name'] ); ?></label>
 						</th>
-						<td class="forminp forminp-<?php echo sanitize_title( $value['type'] ) ?>">
+						<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>">
 							<input
-								name="<?php echo $name_attribute; ?>"
-                                id="<?php echo $id_attribute; ?>"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); // WPCS: XSS ok. ?>"
+                                id="<?php echo esc_attr( $id_attribute ); ?>"
 								class="a3rev-ui-onoff_checkbox <?php echo esc_attr( $value['class'] ); ?>"
                                 checked_label="<?php echo esc_html( $value['checked_label'] ); ?>"
                                 unchecked_label="<?php echo esc_html( $value['unchecked_label'] ); ?>"
                                 type="checkbox"
 								value="<?php echo esc_attr( stripslashes( $value['checked_value'] ) ); ?>"
 								<?php checked( $option_value, esc_attr( stripslashes( $value['checked_value'] ) ) ); ?>
-								<?php echo implode( ' ', $custom_attributes ); ?>
-								/> <?php echo $description; ?>
+								<?php $this->esc_attribute_array_e( $custom_attributes ); // WPCS: XSS ok. ?>
+								/> <?php $this->esc_description_e( $description ); ?>
                         </td>
 					</tr><?php
 	
@@ -2420,17 +2685,16 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 	
 					$width 	= $option_value['width'];
 					$height = $option_value['height'];
-					$crop 	= checked( 1, $option_value['crop'], false );
 	
 					?><tr valign="top">
-						<th scope="row" class="titledesc"><?php echo $tip; ?><?php echo esc_html( $value['name'] ) ?></th>
-						<td class="forminp forminp-<?php echo sanitize_title( $value['type'] ) ?>">
+						<th scope="row" class="titledesc"><?php echo wp_kses_post( $tip ); ?><?php echo wp_kses_post( $value['name'] ); ?></th>
+						<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>">
 	
-							<label><?php _e( 'Width', 'a3-lazy-load' ); ?> <input name="<?php echo $name_attribute; ?>[width]" id="<?php echo $id_attribute; ?>-width" type="text" class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?>-width" value="<?php echo $width; ?>" /></label>
+							<label><?php esc_html_e( 'Width', 'a3-lazy-load' ); ?> <input name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[width]" id="<?php echo esc_attr( $id_attribute ); ?>-width" type="text" class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>-width" value="<?php echo esc_attr( $width ); ?>" /></label>
 	
-							<label><?php _e( 'Height', 'a3-lazy-load' ); ?> <input name="<?php echo $name_attribute; ?>[height]" id="<?php echo $id_attribute; ?>-height" type="text" class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?>-height" value="<?php echo $height; ?>" /></label>
+							<label><?php esc_html_e( 'Height', 'a3-lazy-load' ); ?> <input name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[height]" id="<?php echo esc_attr( $id_attribute ); ?>-height" type="text" class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>-height" value="<?php echo esc_attr( $height ); ?>" /></label>
 	
-							<label><?php _e( 'Hard Crop', 'a3-lazy-load' ); ?> <input name="<?php echo $name_attribute; ?>[crop]" id="<?php echo $id_attribute; ?>-crop" type="checkbox" class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?>-crop" <?php echo $crop; ?> /></label>
+							<label><?php esc_html_e( 'Hard Crop', 'a3-lazy-load' ); ?> <input name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[crop]" id="<?php echo esc_attr( $id_attribute ); ?>-crop" type="checkbox" class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>-crop" <?php echo checked( 1, $option_value['crop'], false ); ?> /></label>
 	
 							</td>
 					</tr><?php
@@ -2458,17 +2722,15 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 						$args = wp_parse_args( $value['args'], $args );
 	
 					?><tr valign="top">
-						<th scope="row" class="titledesc"><?php echo $tip; ?><?php echo esc_html( $value['name'] ) ?></th>
+						<th scope="row" class="titledesc"><?php echo wp_kses_post( $tip ); ?><?php echo wp_kses_post( $value['name'] ); ?></th>
 						<td class="forminp">
-							<?php echo str_replace(' id=', " data-placeholder='" . esc_html( $value['placeholder'] ) .  "' style='" . $value['css'] . "' class='" . $value['class'] . "' id=", wp_dropdown_pages( $args ) ); ?> <?php echo $description; ?>
+							<?php echo str_replace(' id=', " data-placeholder='" . esc_html( $value['placeholder'] ) .  "' style='" . esc_attr( $value['css'] ) . "' class='" . esc_attr( $value['class'] ) . "' id=", wp_dropdown_pages( $args ) ); ?> <?php $this->esc_description_e( $description ); ?>
 						</td>
 					</tr><?php
 				break;
 
 				// Font Control
 				case 'typography':
-
-					$default_color = ' data-default-color="' . esc_attr( $value['default']['color'] ) . '"';
 
 					if ( ! isset( $option_value['line_height'] ) ) {
 						$option_value['line_height'] = '1.4em';
@@ -2481,66 +2743,67 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 					$color       = $option_value['color'];
 
 					?><tr valign="top">
-						<th scope="row" class="titledesc"><?php echo $tip; ?><?php echo esc_html( $value['name'] ) ?></th>
+						<th scope="row" class="titledesc"><?php echo wp_kses_post( $tip ); ?><?php echo wp_kses_post( $value['name'] ); ?></th>
 						<td class="forminp">
-                        	<?php echo $description; ?>
-                            <div class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?>-control">
+                        	<?php $this->esc_description_e( $description ); ?>
+                            <div class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>-control">
                         	<!-- Font Size -->
 							<select
-								name="<?php echo $name_attribute; ?>[size]"
-                                id="<?php echo $id_attribute; ?>-size"
-								class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?>-size chzn-select <?php if ( is_rtl() ) { echo 'chzn-rtl'; } ?>"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[size]"
+                                id="<?php echo esc_attr( $id_attribute ); ?>-size"
+								class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>-size chzn-select <?php if ( is_rtl() ) { echo 'chzn-rtl'; } ?>"
 								>
 								<?php
 									for ( $i = 6; $i <= 70; $i++ ) {
 										?>
 										<option value="<?php echo esc_attr( $i ); ?>px" <?php
 												selected( $size, $i.'px' );
-										?>><?php echo esc_attr( $i ); ?>px</option>
+										?>><?php echo esc_html( $i ); ?>px</option>
 										<?php
 									}
 								?>
 						   </select>
 						   <!-- Line Height -->
 							<select
-								name="<?php echo $name_attribute; ?>[line_height]"
-                                id="<?php echo $id_attribute; ?>-line_height"
-								class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?>-line_height chzn-select <?php if ( is_rtl() ) { echo 'chzn-rtl'; } ?>"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[line_height]"
+                                id="<?php echo esc_attr( $id_attribute ); ?>-line_height"
+								class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>-line_height chzn-select <?php if ( is_rtl() ) { echo 'chzn-rtl'; } ?>"
 								>
+									<option value="" selected="selected"><?php esc_html_e( 'Default' ); ?></option>
 								<?php
 									for ( $i = 0.6; $i <= 3.1; $i = $i + 0.1 ) {
 										?>
 										<option value="<?php echo esc_attr( $i ); ?>em" <?php
 												selected( $line_height, $i.'em' );
-										?>><?php echo esc_attr( $i ); ?>em</option>
+										?>><?php echo esc_html( $i ); ?>em</option>
 										<?php
 									}
 								?>
 						   </select>
                            <!-- Font Face -->
 							<select
-								name="<?php echo $name_attribute; ?>[face]"
-                                id="<?php echo $id_attribute; ?>-face"
-								class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?>-face chzn-select <?php if ( is_rtl() ) { echo 'chzn-rtl'; } ?>"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[face]"
+                                id="<?php echo esc_attr( $id_attribute ); ?>-face"
+								class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>-face chzn-select <?php if ( is_rtl() ) { echo 'chzn-rtl'; } ?>"
 								>
-								<optgroup label="<?php _e( '-- Default Fonts --', 'a3-lazy-load' ); ?>">
+								<optgroup label="<?php esc_attr_e( '-- Default Fonts --', 'a3-lazy-load' ); ?>">
                                 <?php
-									foreach ( $a3_lazy_load_fonts_face->get_default_fonts() as $val => $text ) {
+									foreach ( $GLOBALS[$this->plugin_prefix.'fonts_face']->get_default_fonts() as $val => $text ) {
 										?>
                                         <option value="<?php echo esc_attr( $val ); ?>" <?php
 												selected( esc_attr( $val ), esc_attr( $face ) );
-										?>><?php echo esc_attr( $text ); ?></option>
+										?>><?php echo esc_html( $text ); ?></option>
                                         <?php
 									}
 								?>
                                 </optgroup>
-                                <optgroup label="<?php _e( '-- Google Fonts --', 'a3-lazy-load' ); ?>">
+                                <optgroup label="<?php esc_attr_e( '-- Google Fonts --', 'a3-lazy-load' ); ?>">
                                 <?php
-									foreach ( $a3_lazy_load_fonts_face->get_google_fonts() as $font ) {
+									foreach ( $GLOBALS[$this->plugin_prefix.'fonts_face']->get_google_fonts() as $font ) {
 										?>
                                         <option value="<?php echo esc_attr( $font['name'] ); ?>" <?php
 												selected( esc_attr( $font['name'] ), esc_attr( $face ) );
-										?>><?php echo esc_attr( $font['name'] ); ?></option>
+										?>><?php echo esc_html( $font['name'] ); ?></option>
                                         <?php
 									}
 								?>
@@ -2549,16 +2812,16 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
                            
                            <!-- Font Weight -->
                            <select
-								name="<?php echo $name_attribute; ?>[style]"
-                                id="<?php echo $id_attribute; ?>-style"
-								class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?>-style chzn-select <?php if ( is_rtl() ) { echo 'chzn-rtl'; } ?>"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[style]"
+                                id="<?php echo esc_attr( $id_attribute ); ?>-style"
+								class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>-style chzn-select <?php if ( is_rtl() ) { echo 'chzn-rtl'; } ?>"
 								>
 								<?php
 									foreach ( $this->get_font_weights() as $val => $text ) {
 										?>
 										<option value="<?php echo esc_attr( $val ); ?>" <?php
 												selected( esc_attr( $val ), esc_attr( $style ) );
-										?>><?php echo esc_attr( $text ); ?></option>
+										?>><?php echo esc_html( $text ); ?></option>
                                         <?php
 									}
 								?>
@@ -2566,16 +2829,16 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
                            
                            <!-- Font Color -->
                            <input
-								name="<?php echo $name_attribute; ?>[color]"
-								id="<?php echo $id_attribute; ?>-color"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[color]"
+								id="<?php echo esc_attr( $id_attribute ); ?>-color"
 								type="text"
 								value="<?php echo esc_attr( $color ); ?>"
-								class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?>-color a3rev-color-picker"
-								<?php echo $default_color; ?>
+								class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>-color a3rev-color-picker"
+								data-default-color="<?php echo esc_attr( $value['default']['color'] ); ?>"
 								/> 
                                 
                            <!-- Preview Button -->
-                           <div class="a3rev-ui-typography-preview"><a href="#" class="a3rev-ui-typography-preview-button button submit-button" title="<?php _e( 'Preview your customized typography settings', 'a3-lazy-load' ); ?>"><span>&nbsp;</span></a></div>
+                           <div class="a3rev-ui-typography-preview"><a href="#" class="a3rev-ui-typography-preview-button button submit-button" title="<?php esc_attr_e( 'Preview your customized typography settings', 'a3-lazy-load'); ?>"><span>&nbsp;</span></a></div>
                            
                            </div>
                            
@@ -2590,7 +2853,6 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 					if ( ! is_array( $value['default'] ) ) $value['default'] = array();
 					
 					// For Border Styles
-					$default_color = ' data-default-color="' . esc_attr( $value['default']['color'] ) . '"';
 					
 					$width	= $option_value['width'];
 					$style	= $option_value['style'];
@@ -2635,14 +2897,14 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 					$bottom_right_corner = intval( $bottom_right_corner );
 				
 					?><tr valign="top">
-						<th scope="row" class="titledesc"><?php echo $tip; ?><?php echo esc_html( $value['name'] ) ?></th>
+						<th scope="row" class="titledesc"><?php echo wp_kses_post( $tip ); ?><?php echo wp_kses_post( $value['name'] ); ?></th>
 						<td class="forminp forminp-border_corner">
-							<?php echo $description; ?>
+							<?php $this->esc_description_e( $description ); ?>
                             <div class="a3rev-ui-settings-control">
                         	<!-- Border Width -->
 							<select
-								name="<?php echo $name_attribute; ?>[width]"
-                                id="<?php echo $id_attribute; ?>-width"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[width]"
+                                id="<?php echo esc_attr( $id_attribute ); ?>-width"
 								class="a3rev-ui-border_styles-width chzn-select <?php if ( is_rtl() ) { echo 'chzn-rtl'; } ?>"
 								>
 								<?php
@@ -2650,7 +2912,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 										?>
 										<option value="<?php echo esc_attr( $i ); ?>px" <?php
 												selected( $width, $i.'px' );
-										?>><?php echo esc_attr( $i ); ?>px</option>
+										?>><?php echo esc_html( $i ); ?>px</option>
 										<?php
 									}
 								?>
@@ -2658,8 +2920,8 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
                            
                            <!-- Border Style -->
                            <select
-								name="<?php echo $name_attribute; ?>[style]"
-                                id="<?php echo $id_attribute; ?>-style"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[style]"
+                                id="<?php echo esc_attr( $id_attribute ); ?>-style"
 								class="a3rev-ui-border_styles-style chzn-select <?php if ( is_rtl() ) { echo 'chzn-rtl'; } ?>"
 								>
 								<?php
@@ -2667,7 +2929,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 										?>
 										<option value="<?php echo esc_attr( $val ); ?>" <?php
 												selected( esc_attr( $val ), esc_attr( $style ) );
-										?>><?php echo esc_attr( $text ); ?></option>
+										?>><?php echo esc_html( $text ); ?></option>
                                         <?php
 									}
 								?>
@@ -2675,47 +2937,47 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
                            
                            <!-- Border Color -->
                            <input
-								name="<?php echo $name_attribute; ?>[color]"
-								id="<?php echo $id_attribute; ?>-color"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[color]"
+								id="<?php echo esc_attr( $id_attribute ); ?>-color"
 								type="text"
 								value="<?php echo esc_attr( $color ); ?>"
 								class="a3rev-ui-border_styles-color a3rev-color-picker"
-								<?php echo $default_color; ?>
+								data-default-color="<?php echo esc_attr( $value['default']['color'] ); ?>"
 								/>
                            
                            <!-- Preview Button -->
-                           <div class="a3rev-ui-settings-preview"><a href="#" class="a3rev-ui-border-preview-button a3rev-ui-settings-preview-button button submit-button" title="<?php _e( 'Preview your customized border settings', 'a3-lazy-load' ); ?>"><span>&nbsp;</span></a></div>
-                           <span class="description" style="margin-left:5px;"><?php echo __( '0px = No Border', 'a3-lazy-load' ); ?></span>
+                           <div class="a3rev-ui-settings-preview"><a href="#" class="a3rev-ui-border-preview-button a3rev-ui-settings-preview-button button submit-button" title="<?php esc_attr_e( 'Preview your customized border settings', 'a3-lazy-load' ); ?>"><span>&nbsp;</span></a></div>
+                           <span class="description" style="margin-left:5px;"><?php esc_html_e( '0px = No Border', 'a3-lazy-load' ); ?></span>
                            <div style="clear:both; margin-bottom:10px"></div>
                            
                            <!-- Border Corner : Rounded or Square -->
 								<input
-                                    name="<?php echo $name_attribute; ?>[corner]"
-                                    id="<?php echo $id_attribute; ?>"
+                                    name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[corner]"
+                                    id="<?php echo esc_attr( $id_attribute ); ?>"
                                     class="a3rev-ui-border-corner a3rev-ui-onoff_checkbox <?php echo esc_attr( $value['class'] ); ?>"
-                                    checked_label="<?php _e( 'Rounded', 'a3-lazy-load' ); ?>"
-                                    unchecked_label="<?php _e( 'Square', 'a3-lazy-load' ); ?>"
+                                    checked_label="<?php esc_attr_e( 'Rounded', 'a3-lazy-load' ); ?>"
+                                    unchecked_label="<?php esc_attr_e( 'Square', 'a3-lazy-load' ); ?>"
                                     type="checkbox"
                                     value="rounded"
                                     <?php checked( 'rounded', $corner ); ?>
-                                    <?php echo implode( ' ', $custom_attributes ); ?>
+                                    <?php $this->esc_attribute_array_e( $custom_attributes ); // WPCS: XSS ok. ?>
 								/> 
                                 
 							<!-- Border Rounded Value -->
 								<div class="a3rev-ui-border-corner-value-container">
                                 	<div class="a3rev-ui-border_corner-top_left">
-                                        <span class="a3rev-ui-border_corner-span"><?php _e( 'Top Left Corner', 'a3-lazy-load' ); ?></span>
+                                        <span class="a3rev-ui-border_corner-span"><?php esc_html_e( 'Top Left Corner', 'a3-lazy-load' ); ?></span>
                                         <div class="a3rev-ui-slide-container">
                                             <div class="a3rev-ui-slide-container-start">
                                                 <div class="a3rev-ui-slide-container-end">
-                                                    <div class="a3rev-ui-slide" id="<?php echo $id_attribute; ?>-top_left_corner_div" min="<?php echo esc_attr( $value['min'] ); ?>" max="<?php echo esc_attr( $value['max'] ); ?>" inc="<?php echo esc_attr( $value['increment'] ); ?>"></div>
+                                                    <div class="a3rev-ui-slide" id="<?php echo esc_attr( $id_attribute ); ?>-top_left_corner_div" min="<?php echo esc_attr( $value['min'] ); ?>" max="<?php echo esc_attr( $value['max'] ); ?>" inc="<?php echo esc_attr( $value['increment'] ); ?>"></div>
                                                 </div>
                                             </div>
                                             <div class="a3rev-ui-slide-result-container">
                                             <input
                                                 readonly="readonly"
-                                                name="<?php echo $name_attribute; ?>[top_left_corner]"
-                                                id="<?php echo $id_attribute; ?>-top_left_corner"
+                                                name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[top_left_corner]"
+                                                id="<?php echo esc_attr( $id_attribute ); ?>-top_left_corner"
                                                 type="text"
                                                 value="<?php echo esc_attr( $top_left_corner ); ?>"
                                                 class="a3rev-ui-border_top_left_corner a3rev-ui-slider"
@@ -2724,18 +2986,18 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
                                 		</div>
                                     </div>
                                     <div class="a3rev-ui-border_corner-top_right">
-                                        <span class="a3rev-ui-border_corner-span"><?php _e( 'Top Right Corner', 'a3-lazy-load' ); ?></span> 
+                                        <span class="a3rev-ui-border_corner-span"><?php esc_html_e( 'Top Right Corner', 'a3-lazy-load' ); ?></span> 
                                         <div class="a3rev-ui-slide-container">
                                             <div class="a3rev-ui-slide-container-start">
                                                 <div class="a3rev-ui-slide-container-end">
-                                                    <div class="a3rev-ui-slide" id="<?php echo $id_attribute; ?>-top_right_corner_div" min="<?php echo esc_attr( $value['min'] ); ?>" max="<?php echo esc_attr( $value['max'] ); ?>" inc="<?php echo esc_attr( $value['increment'] ); ?>"></div>
+                                                    <div class="a3rev-ui-slide" id="<?php echo esc_attr( $id_attribute ); ?>-top_right_corner_div" min="<?php echo esc_attr( $value['min'] ); ?>" max="<?php echo esc_attr( $value['max'] ); ?>" inc="<?php echo esc_attr( $value['increment'] ); ?>"></div>
                                                 </div>
                                             </div>
                                             <div class="a3rev-ui-slide-result-container">
                                             <input
                                                 readonly="readonly"
-                                                name="<?php echo $name_attribute; ?>[top_right_corner]"
-                                                id="<?php echo $id_attribute; ?>-top_right_corner"
+                                                name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[top_right_corner]"
+                                                id="<?php echo esc_attr( $id_attribute ); ?>-top_right_corner"
                                                 type="text"
                                                 value="<?php echo esc_attr( $top_right_corner ); ?>"
                                                 class="a3rev-ui-border_top_right_corner a3rev-ui-slider"
@@ -2744,18 +3006,18 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
                                 		</div>
                                     </div>
                                     <div class="a3rev-ui-border_corner-bottom_right">
-                                        <span class="a3rev-ui-border_corner-span"><?php _e( 'Bottom Right Corner', 'a3-lazy-load' ); ?></span> 
+                                        <span class="a3rev-ui-border_corner-span"><?php esc_html_e( 'Bottom Right Corner', 'a3-lazy-load' ); ?></span> 
                                         <div class="a3rev-ui-slide-container">
                                             <div class="a3rev-ui-slide-container-start">
                                                 <div class="a3rev-ui-slide-container-end">
-                                                    <div class="a3rev-ui-slide" id="<?php echo $id_attribute; ?>-bottom_right_corner_div" min="<?php echo esc_attr( $value['min'] ); ?>" max="<?php echo esc_attr( $value['max'] ); ?>" inc="<?php echo esc_attr( $value['increment'] ); ?>"></div>
+                                                    <div class="a3rev-ui-slide" id="<?php echo esc_attr( $id_attribute ); ?>-bottom_right_corner_div" min="<?php echo esc_attr( $value['min'] ); ?>" max="<?php echo esc_attr( $value['max'] ); ?>" inc="<?php echo esc_attr( $value['increment'] ); ?>"></div>
                                                 </div>
                                             </div>
                                             <div class="a3rev-ui-slide-result-container">
                                             <input
                                                 readonly="readonly"
-                                                name="<?php echo $name_attribute; ?>[bottom_right_corner]"
-                                                id="<?php echo $id_attribute; ?>-bottom_right_corner"
+                                                name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[bottom_right_corner]"
+                                                id="<?php echo esc_attr( $id_attribute ); ?>-bottom_right_corner"
                                                 type="text"
                                                 value="<?php echo esc_attr( $bottom_right_corner ); ?>"
                                                 class="a3rev-ui-border_bottom_right_corner a3rev-ui-slider"
@@ -2764,18 +3026,18 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
                                 		</div>
                                     </div>
                                     <div class="a3rev-ui-border_corner-bottom_left">
-                                        <span class="a3rev-ui-border_corner-span"><?php _e( 'Bottom Left Corner', 'a3-lazy-load' ); ?></span>
+                                        <span class="a3rev-ui-border_corner-span"><?php esc_html_e( 'Bottom Left Corner', 'a3-lazy-load' ); ?></span>
                                         <div class="a3rev-ui-slide-container"> 
                                             <div class="a3rev-ui-slide-container-start">
                                                 <div class="a3rev-ui-slide-container-end">
-                                                    <div class="a3rev-ui-slide" id="<?php echo $id_attribute; ?>-bottom_left_corner_div" min="<?php echo esc_attr( $value['min'] ); ?>" max="<?php echo esc_attr( $value['max'] ); ?>" inc="<?php echo esc_attr( $value['increment'] ); ?>"></div>
+                                                    <div class="a3rev-ui-slide" id="<?php echo esc_attr( $id_attribute ); ?>-bottom_left_corner_div" min="<?php echo esc_attr( $value['min'] ); ?>" max="<?php echo esc_attr( $value['max'] ); ?>" inc="<?php echo esc_attr( $value['increment'] ); ?>"></div>
                                                 </div>
                                             </div>
                                             <div class="a3rev-ui-slide-result-container">
                                             <input
                                                 readonly="readonly"
-                                                name="<?php echo $name_attribute; ?>[bottom_left_corner]"
-                                                id="<?php echo $id_attribute; ?>-bottom_left_corner"
+                                                name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[bottom_left_corner]"
+                                                id="<?php echo esc_attr( $id_attribute ); ?>-bottom_left_corner"
                                                 type="text"
                                                 value="<?php echo esc_attr( $bottom_left_corner ); ?>"
                                                 class="a3rev-ui-border_bottom_left_corner a3rev-ui-slider"
@@ -2794,22 +3056,20 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 				
 				// Border Style Control
 				case 'border_styles':
-				
-					$default_color = ' data-default-color="' . esc_attr( $value['default']['color'] ) . '"';
-					
+									
 					$width	= $option_value['width'];
 					$style	= $option_value['style'];
 					$color	= $option_value['color'];
 				
 					?><tr valign="top">
-						<th scope="row" class="titledesc"><?php echo $tip; ?><?php echo esc_html( $value['name'] ) ?></th>
+						<th scope="row" class="titledesc"><?php echo wp_kses_post( $tip ); ?><?php echo wp_kses_post( $value['name'] ); ?></th>
 						<td class="forminp">
-							<?php echo $description; ?>
+							<?php $this->esc_description_e( $description ); ?>
                             <div class="a3rev-ui-settings-control">
                         	<!-- Border Width -->
 							<select
-								name="<?php echo $name_attribute; ?>[width]"
-                                id="<?php echo $id_attribute; ?>-width"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[width]"
+                                id="<?php echo esc_attr( $id_attribute ); ?>-width"
 								class="a3rev-ui-border_styles-width chzn-select <?php if ( is_rtl() ) { echo 'chzn-rtl'; } ?>"
 								>
 								<?php
@@ -2817,7 +3077,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 										?>
 										<option value="<?php echo esc_attr( $i ); ?>px" <?php
 												selected( $width, $i.'px' );
-										?>><?php echo esc_attr( $i ); ?>px</option>
+										?>><?php echo esc_html( $i ); ?>px</option>
 										<?php
 									}
 								?>
@@ -2825,8 +3085,8 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
                            
                            <!-- Border Style -->
                            <select
-								name="<?php echo $name_attribute; ?>[style]"
-                                id="<?php echo $id_attribute; ?>-style"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[style]"
+                                id="<?php echo esc_attr( $id_attribute ); ?>-style"
 								class="a3rev-ui-border_styles-style chzn-select <?php if ( is_rtl() ) { echo 'chzn-rtl'; } ?>"
 								>
 								<?php
@@ -2834,7 +3094,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 										?>
 										<option value="<?php echo esc_attr( $val ); ?>" <?php
 												selected( esc_attr( $val ), esc_attr( $style ) );
-										?>><?php echo esc_attr( $text ); ?></option>
+										?>><?php echo esc_html( $text ); ?></option>
                                         <?php
 									}
 								?>
@@ -2842,17 +3102,17 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
                            
                            <!-- Border Color -->
                            <input
-								name="<?php echo $name_attribute; ?>[color]"
-								id="<?php echo $id_attribute; ?>-color"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[color]"
+								id="<?php echo esc_attr( $id_attribute ); ?>-color"
 								type="text"
 								value="<?php echo esc_attr( $color ); ?>"
 								class="a3rev-ui-border_styles-color a3rev-color-picker"
-								<?php echo $default_color; ?>
+								data-default-color="<?php echo esc_attr( $value['default']['color'] ); ?>"
 								/>
                            
                            <!-- Preview Button -->
-                           <div class="a3rev-ui-settings-preview"><a href="#" class="a3rev-ui-border-preview-button a3rev-ui-settings-preview-button button submit-button" title="<?php _e( 'Preview your customized border styles settings', 'a3-lazy-load' ); ?>"><span>&nbsp;</span></a></div>
-                           <span class="description" style="margin-left:5px;"><?php echo __( '0px = No Border', 'a3-lazy-load' ); ?></span>
+                           <div class="a3rev-ui-settings-preview"><a href="#" class="a3rev-ui-border-preview-button a3rev-ui-settings-preview-button button submit-button" title="<?php esc_attr_e( 'Preview your customized border styles settings', 'a3-lazy-load' ); ?>"><span>&nbsp;</span></a></div>
+                           <span class="description" style="margin-left:5px;"><?php esc_html_e( '0px = No Border', 'a3-lazy-load' ); ?></span>
                            </div>
                            
 						</td>
@@ -2901,40 +3161,40 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 					$bottom_right_corner = intval( $bottom_right_corner );
 				
 					?><tr valign="top">
-						<th scope="row" class="titledesc"><?php echo $tip; ?><?php echo esc_html( $value['name'] ) ?></th>
-						<td class="forminp forminp-<?php echo sanitize_title( $value['type'] ) ?>">
+						<th scope="row" class="titledesc"><?php echo wp_kses_post( $tip ); ?><?php echo wp_kses_post( $value['name'] ); ?></th>
+						<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>">
                             <div class="a3rev-ui-settings-control">	
                                 <!-- Border Corner : Rounded or Square -->
                                 <input
-                                    name="<?php echo $name_attribute; ?>[corner]"
-                                    id="<?php echo $id_attribute; ?>"
+                                    name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[corner]"
+                                    id="<?php echo esc_attr( $id_attribute ); ?>"
                                     class="a3rev-ui-border-corner a3rev-ui-onoff_checkbox <?php echo esc_attr( $value['class'] ); ?>"
-                                    checked_label="<?php _e( 'Rounded', 'a3-lazy-load' ); ?>"
-                                    unchecked_label="<?php _e( 'Square', 'a3-lazy-load' ); ?>"
+                                    checked_label="<?php esc_attr_e( 'Rounded', 'a3-lazy-load' ); ?>"
+                                    unchecked_label="<?php esc_attr_e( 'Square', 'a3-lazy-load' ); ?>"
                                     type="checkbox"
                                     value="rounded"
                                     <?php checked( 'rounded', $corner ); ?>
-                                    <?php echo implode( ' ', $custom_attributes ); ?>
+                                    <?php $this->esc_attribute_array_e( $custom_attributes ); // WPCS: XSS ok. ?>
 								/> 
                                 
                                 <!-- Preview Button -->
-                               	<div class="a3rev-ui-settings-preview"><a href="#" class="a3rev-ui-border-preview-button a3rev-ui-settings-preview-button button submit-button" title="<?php _e( 'Preview your customized border settings', 'a3-lazy-load' ); ?>"><span>&nbsp;</span></a></div>
-                                <?php echo $description; ?>
+                               	<div class="a3rev-ui-settings-preview"><a href="#" class="a3rev-ui-border-preview-button a3rev-ui-settings-preview-button button submit-button" title="<?php esc_attr_e( 'Preview your customized border settings', 'a3-lazy-load' ); ?>"><span>&nbsp;</span></a></div>
+                                <?php $this->esc_description_e( $description ); ?>
                                	<!-- Border Rounded Value -->
 								<div class="a3rev-ui-border-corner-value-container">
                                 	<div class="a3rev-ui-border_corner-top_left">
-                                        <span class="a3rev-ui-border_corner-span"><?php _e( 'Top Left Corner', 'a3-lazy-load' ); ?></span>
+                                        <span class="a3rev-ui-border_corner-span"><?php esc_html_e( 'Top Left Corner', 'a3-lazy-load' ); ?></span>
                                         <div class="a3rev-ui-slide-container">
                                             <div class="a3rev-ui-slide-container-start">
                                                 <div class="a3rev-ui-slide-container-end">
-                                                    <div class="a3rev-ui-slide" id="<?php echo $id_attribute; ?>-top_left_corner_div" min="<?php echo esc_attr( $value['min'] ); ?>" max="<?php echo esc_attr( $value['max'] ); ?>" inc="<?php echo esc_attr( $value['increment'] ); ?>"></div>
+                                                    <div class="a3rev-ui-slide" id="<?php echo esc_attr( $id_attribute ); ?>-top_left_corner_div" min="<?php echo esc_attr( $value['min'] ); ?>" max="<?php echo esc_attr( $value['max'] ); ?>" inc="<?php echo esc_attr( $value['increment'] ); ?>"></div>
                                                 </div>
                                             </div>
                                             <div class="a3rev-ui-slide-result-container">
                                             <input
                                                 readonly="readonly"
-                                                name="<?php echo $name_attribute; ?>[top_left_corner]"
-                                                id="<?php echo $id_attribute; ?>-top_left_corner"
+                                                name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[top_left_corner]"
+                                                id="<?php echo esc_attr( $id_attribute ); ?>-top_left_corner"
                                                 type="text"
                                                 value="<?php echo esc_attr( $top_left_corner ); ?>"
                                                 class="a3rev-ui-border_top_left_corner a3rev-ui-slider"
@@ -2943,18 +3203,18 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
                                 		</div>
                                     </div>
                                     <div class="a3rev-ui-border_corner-top_right">
-                                        <span class="a3rev-ui-border_corner-span"><?php _e( 'Top Right Corner', 'a3-lazy-load' ); ?></span>
+                                        <span class="a3rev-ui-border_corner-span"><?php esc_html_e( 'Top Right Corner', 'a3-lazy-load' ); ?></span>
                                         <div class="a3rev-ui-slide-container"> 
                                             <div class="a3rev-ui-slide-container-start">
                                                 <div class="a3rev-ui-slide-container-end">
-                                                    <div class="a3rev-ui-slide" id="<?php echo $id_attribute; ?>-top_right_corner_div" min="<?php echo esc_attr( $value['min'] ); ?>" max="<?php echo esc_attr( $value['max'] ); ?>" inc="<?php echo esc_attr( $value['increment'] ); ?>"></div>
+                                                    <div class="a3rev-ui-slide" id="<?php echo esc_attr( $id_attribute ); ?>-top_right_corner_div" min="<?php echo esc_attr( $value['min'] ); ?>" max="<?php echo esc_attr( $value['max'] ); ?>" inc="<?php echo esc_attr( $value['increment'] ); ?>"></div>
                                                 </div>
                                             </div>
                                             <div class="a3rev-ui-slide-result-container">
                                             <input
                                                 readonly="readonly"
-                                                name="<?php echo $name_attribute; ?>[top_right_corner]"
-                                                id="<?php echo $id_attribute; ?>-top_right_corner"
+                                                name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[top_right_corner]"
+                                                id="<?php echo esc_attr( $id_attribute ); ?>-top_right_corner"
                                                 type="text"
                                                 value="<?php echo esc_attr( $top_right_corner ); ?>"
                                                 class="a3rev-ui-border_top_right_corner a3rev-ui-slider"
@@ -2963,18 +3223,18 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
                                 		</div>
                                     </div>
                                     <div class="a3rev-ui-border_corner-bottom_right">
-                                        <span class="a3rev-ui-border_corner-span"><?php _e( 'Bottom Right Corner', 'a3-lazy-load' ); ?></span>
+                                        <span class="a3rev-ui-border_corner-span"><?php esc_html_e( 'Bottom Right Corner', 'a3-lazy-load' ); ?></span>
                                         <div class="a3rev-ui-slide-container"> 
                                             <div class="a3rev-ui-slide-container-start">
                                                 <div class="a3rev-ui-slide-container-end">
-                                                    <div class="a3rev-ui-slide" id="<?php echo $id_attribute; ?>-bottom_right_corner_div" min="<?php echo esc_attr( $value['min'] ); ?>" max="<?php echo esc_attr( $value['max'] ); ?>" inc="<?php echo esc_attr( $value['increment'] ); ?>"></div>
+                                                    <div class="a3rev-ui-slide" id="<?php echo esc_attr( $id_attribute ); ?>-bottom_right_corner_div" min="<?php echo esc_attr( $value['min'] ); ?>" max="<?php echo esc_attr( $value['max'] ); ?>" inc="<?php echo esc_attr( $value['increment'] ); ?>"></div>
                                                 </div>
                                             </div>
                                             <div class="a3rev-ui-slide-result-container">
                                             <input
                                                 readonly="readonly"
-                                                name="<?php echo $name_attribute; ?>[bottom_right_corner]"
-                                                id="<?php echo $id_attribute; ?>-bottom_right_corner"
+                                                name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[bottom_right_corner]"
+                                                id="<?php echo esc_attr( $id_attribute ); ?>-bottom_right_corner"
                                                 type="text"
                                                 value="<?php echo esc_attr( $bottom_right_corner ); ?>"
                                                 class="a3rev-ui-border_bottom_right_corner a3rev-ui-slider"
@@ -2983,18 +3243,18 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
                                 		</div>
                                     </div>
                                     <div class="a3rev-ui-border_corner-bottom_left">
-                                        <span class="a3rev-ui-border_corner-span"><?php _e( 'Bottom Left Corner', 'a3-lazy-load' ); ?></span> 
+                                        <span class="a3rev-ui-border_corner-span"><?php esc_html_e( 'Bottom Left Corner', 'a3-lazy-load' ); ?></span> 
                                         <div class="a3rev-ui-slide-container">
                                             <div class="a3rev-ui-slide-container-start">
                                                 <div class="a3rev-ui-slide-container-end">
-                                                    <div class="a3rev-ui-slide" id="<?php echo $id_attribute; ?>-bottom_left_corner_div" min="<?php echo esc_attr( $value['min'] ); ?>" max="<?php echo esc_attr( $value['max'] ); ?>" inc="<?php echo esc_attr( $value['increment'] ); ?>"></div>
+                                                    <div class="a3rev-ui-slide" id="<?php echo esc_attr( $id_attribute ); ?>-bottom_left_corner_div" min="<?php echo esc_attr( $value['min'] ); ?>" max="<?php echo esc_attr( $value['max'] ); ?>" inc="<?php echo esc_attr( $value['increment'] ); ?>"></div>
                                                 </div>
                                             </div>
                                             <div class="a3rev-ui-slide-result-container">
                                             <input
                                                 readonly="readonly"
-                                                name="<?php echo $name_attribute; ?>[bottom_left_corner]"
-                                                id="<?php echo $id_attribute; ?>-bottom_left_corner"
+                                                name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[bottom_left_corner]"
+                                                id="<?php echo esc_attr( $id_attribute ); ?>-bottom_left_corner"
                                                 type="text"
                                                 value="<?php echo esc_attr( $bottom_left_corner ); ?>"
                                                 class="a3rev-ui-border_bottom_left_corner a3rev-ui-slider"
@@ -3013,9 +3273,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 				
 				// Box Shadow Control
 				case 'box_shadow':
-				
-					$default_color = ' data-default-color="' . esc_attr( $value['default']['color'] ) . '"';
-					
+									
 					if ( ! isset( $option_value['enable'] ) ) $option_value['enable'] = 0;
 					$enable		= $option_value['enable'];
 					if ( ! isset( $option_value['inset'] ) ) $option_value['inset'] = '';
@@ -3027,36 +3285,36 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 					$inset		= $option_value['inset'];
 				
 					?><tr valign="top">
-						<th scope="row" class="titledesc"><?php echo $tip; ?><?php echo esc_html( $value['name'] ) ?></th>
+						<th scope="row" class="titledesc"><?php echo wp_kses_post( $tip ); ?><?php echo wp_kses_post( $value['name'] ); ?></th>
 						<td class="forminp forminp-box_shadow">
                             <input
-                                    name="<?php echo $name_attribute; ?>[enable]"
-                                    id="<?php echo $id_attribute; ?>"
+                                    name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[enable]"
+                                    id="<?php echo esc_attr( $id_attribute ); ?>"
                                     class="a3rev-ui-box_shadow-enable a3rev-ui-onoff_checkbox <?php echo esc_attr( $value['class'] ); ?>"
-                                    checked_label="<?php _e( 'ON', 'a3-lazy-load' ); ?>"
-                                    unchecked_label="<?php _e( 'OFF', 'a3-lazy-load' ); ?>"
+                                    checked_label="<?php esc_attr_e( 'ON', 'a3-lazy-load' ); ?>"
+                                    unchecked_label="<?php esc_attr_e( 'OFF', 'a3-lazy-load' ); ?>"
                                     type="checkbox"
                                     value="1"
                                     <?php checked( 1, $enable ); ?>
-                                    <?php echo implode( ' ', $custom_attributes ); ?>
+                                    <?php $this->esc_attribute_array_e( $custom_attributes ); // WPCS: XSS ok. ?>
 								/>
-							<?php echo $description; ?>
+							<?php $this->esc_description_e( $description ); ?>
                             <div style="clear:both;"></div>    
                             <div class="a3rev-ui-box_shadow-enable-container">
                             <div class="a3rev-ui-settings-control">
                         	<!-- Box Horizontal Shadow Size -->
 							<select
-								name="<?php echo $name_attribute; ?>[h_shadow]"
-                                id="<?php echo $id_attribute; ?>-h_shadow"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[h_shadow]"
+                                id="<?php echo esc_attr( $id_attribute ); ?>-h_shadow"
 								class="a3rev-ui-box_shadow-h_shadow chzn-select <?php if ( is_rtl() ) { echo 'chzn-rtl'; } ?>"
-                                data-placeholder="<?php _e( 'Horizontal Shadow', 'a3-lazy-load' ); ?>"
+                                data-placeholder="<?php esc_attr_e( 'Horizontal Shadow', 'a3-lazy-load' ); ?>"
 								>
 								<?php
 									for ( $i = -20; $i <= 20; $i++ ) {
 										?>
 										<option value="<?php echo esc_attr( $i ); ?>px" <?php
 												selected( $h_shadow, $i.'px' );
-										?>><?php echo esc_attr( $i ); ?>px</option>
+										?>><?php echo esc_html( $i ); ?>px</option>
 										<?php
 									}
 								?>
@@ -3064,17 +3322,17 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
                            
                         	<!-- Box Vertical Shadow Size -->
 							<select
-								name="<?php echo $name_attribute; ?>[v_shadow]"
-                                id="<?php echo $id_attribute; ?>-v_shadow"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[v_shadow]"
+                                id="<?php echo esc_attr( $id_attribute ); ?>-v_shadow"
 								class="a3rev-ui-box_shadow-v_shadow chzn-select <?php if ( is_rtl() ) { echo 'chzn-rtl'; } ?>"
-                                data-placeholder="<?php _e( 'Vertical Shadow', 'a3-lazy-load' ); ?>"
+                                data-placeholder="<?php esc_attr_e( 'Vertical Shadow', 'a3-lazy-load' ); ?>"
 								>
 								<?php
 									for ( $i = -20; $i <= 20; $i++ ) {
 										?>
 										<option value="<?php echo esc_attr( $i ); ?>px" <?php
 												selected( $v_shadow, $i.'px' );
-										?>><?php echo esc_attr( $i ); ?>px</option>
+										?>><?php echo esc_html( $i ); ?>px</option>
 										<?php
 									}
 								?>
@@ -3082,17 +3340,17 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
                            
                            <!-- Box Blur Distance -->
 							<select
-								name="<?php echo $name_attribute; ?>[blur]"
-                                id="<?php echo $id_attribute; ?>-blur"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[blur]"
+                                id="<?php echo esc_attr( $id_attribute ); ?>-blur"
 								class="a3rev-ui-box_shadow-blur chzn-select <?php if ( is_rtl() ) { echo 'chzn-rtl'; } ?>"
-                                data-placeholder="<?php _e( 'Blur Distance', 'a3-lazy-load' ); ?>"
+                                data-placeholder="<?php esc_attr_e( 'Blur Distance', 'a3-lazy-load' ); ?>"
 								>
 								<?php
 									for ( $i = 0; $i <= 20; $i++ ) {
 										?>
 										<option value="<?php echo esc_attr( $i ); ?>px" <?php
 												selected( $blur, $i.'px' );
-										?>><?php echo esc_attr( $i ); ?>px</option>
+										?>><?php echo esc_html( $i ); ?>px</option>
 										<?php
 									}
 								?>
@@ -3100,17 +3358,17 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
                            
                            <!-- Box Spread -->
 							<select
-								name="<?php echo $name_attribute; ?>[spread]"
-                                id="<?php echo $id_attribute; ?>-spread"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[spread]"
+                                id="<?php echo esc_attr( $id_attribute ); ?>-spread"
 								class="a3rev-ui-box_shadow-spread chzn-select <?php if ( is_rtl() ) { echo 'chzn-rtl'; } ?>"
-                                data-placeholder="<?php _e( 'Spread Size', 'a3-lazy-load' ); ?>"
+                                data-placeholder="<?php esc_attr_e( 'Spread Size', 'a3-lazy-load' ); ?>"
 								>
 								<?php
 									for ( $i = 0; $i <= 20; $i++ ) {
 										?>
 										<option value="<?php echo esc_attr( $i ); ?>px" <?php
 												selected( $spread, $i.'px' );
-										?>><?php echo esc_attr( $i ); ?>px</option>
+										?>><?php echo esc_html( $i ); ?>px</option>
 										<?php
 									}
 								?>
@@ -3118,29 +3376,29 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
                            
                            <!-- Box Shadow Inset -->
                                 <input
-                                    name="<?php echo $name_attribute; ?>[inset]"
-                                    id="<?php echo $id_attribute; ?>"
+                                    name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[inset]"
+                                    id="<?php echo esc_attr( $id_attribute ); ?>"
                                     class="a3rev-ui-box_shadow-inset a3rev-ui-onoff_checkbox"
-                                    checked_label="<?php _e( 'INNER', 'a3-lazy-load' ); ?>"
-                                    unchecked_label="<?php _e( 'OUTER', 'a3-lazy-load' ); ?>"
+                                    checked_label="<?php esc_attr_e( 'INNER', 'a3-lazy-load' ); ?>"
+                                    unchecked_label="<?php esc_attr_e( 'OUTER', 'a3-lazy-load' ); ?>"
                                     type="checkbox"
                                     value="inset"
                                     <?php checked( 'inset', $inset ); ?>
-                                    <?php echo implode( ' ', $custom_attributes ); ?>
+                                    <?php $this->esc_attribute_array_e( $custom_attributes ); // WPCS: XSS ok. ?>
 								/> 
                            
                            <!-- Box Shadow Color -->
                            <input
-								name="<?php echo $name_attribute; ?>[color]"
-								id="<?php echo $id_attribute; ?>-color"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); ?>[color]"
+								id="<?php echo esc_attr( $id_attribute ); ?>-color"
 								type="text"
 								value="<?php echo esc_attr( $color ); ?>"
 								class="a3rev-ui-box_shadow-color a3rev-color-picker"
-								<?php echo $default_color; ?>
+								data-default-color="<?php echo esc_attr( $value['default']['color'] ); ?>"
 								/>
                         	
                             <!-- Preview Button -->
-                           <div class="a3rev-ui-settings-preview"><a href="#" class="a3rev-ui-box_shadow-preview-button a3rev-ui-settings-preview-button button submit-button" title="<?php _e( 'Preview your customized box shadow settings', 'a3-lazy-load' ); ?>"><span>&nbsp;</span></a></div>   
+                           <div class="a3rev-ui-settings-preview"><a href="#" class="a3rev-ui-box_shadow-preview-button a3rev-ui-settings-preview-button button submit-button" title="<?php esc_attr_e( 'Preview your customized box shadow settings', 'a3-lazy-load'); ?>"><span>&nbsp;</span></a></div>   
                            </div>
                            <div style="clear:both;"></div>
                            </div>
@@ -3160,24 +3418,24 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 				
 					?><tr valign="top">
 						<th scope="row" class="titledesc">
-                        	<?php echo $tip; ?>
-							<label for="<?php echo $id_attribute; ?>"><?php echo esc_html( $value['name'] ); ?></label>
+                        	<?php echo wp_kses_post( $tip ); ?>
+							<label for="<?php echo esc_attr( $id_attribute ); ?>"><?php echo wp_kses_post( $value['name'] ); ?></label>
 						</th>
-						<td class="forminp forminp-<?php echo sanitize_title( $value['type'] ) ?>">
+						<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>">
                         <div class="a3rev-ui-slide-container">
                             <div class="a3rev-ui-slide-container-start"><div class="a3rev-ui-slide-container-end">
-                                <div class="a3rev-ui-slide" id="<?php echo $id_attribute; ?>_div" min="<?php echo esc_attr( $value['min'] ); ?>" max="<?php echo esc_attr( $value['max'] ); ?>" inc="<?php echo esc_attr( $value['increment'] ); ?>"></div>
+                                <div class="a3rev-ui-slide" id="<?php echo esc_attr( $id_attribute ); ?>_div" min="<?php echo esc_attr( $value['min'] ); ?>" max="<?php echo esc_attr( $value['max'] ); ?>" inc="<?php echo esc_attr( $value['increment'] ); ?>"></div>
                             </div></div>
                             <div class="a3rev-ui-slide-result-container">
                                 <input
                                     readonly="readonly"
-                                    name="<?php echo $name_attribute; ?>"
-                                    id="<?php echo $id_attribute; ?>"
+                                    name="<?php $this->esc_attribute_name_e( $name_attribute ); // WPCS: XSS ok. ?>"
+                                    id="<?php echo esc_attr( $id_attribute ); ?>"
                                     type="text"
                                     value="<?php echo esc_attr( $option_value ); ?>"
                                     class="a3rev-ui-slider"
-                                    <?php echo implode( ' ', $custom_attributes ); ?>
-                                    /> <?php echo $description; ?>
+                                    <?php $this->esc_attribute_array_e( $custom_attributes ); // WPCS: XSS ok. ?>
+                                    /> <?php $this->esc_description_e( $description ); ?>
 							</div>
                         </div>
                         </td>
@@ -3204,12 +3462,12 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 				
 					?><tr valign="top">
 						<th scope="row" class="titledesc">
-                        	<?php echo $tip; ?>
-							<label for="<?php echo $id_attribute; ?>"><?php echo esc_html( $value['name'] ); ?></label>
+                        	<?php echo wp_kses_post( $tip ); ?>
+							<label for="<?php echo esc_attr( $id_attribute ); ?>"><?php echo wp_kses_post( $value['name'] ); ?></label>
 						</th>
-						<td class="forminp forminp-<?php echo sanitize_title( $value['type'] ) ?>">
-                        	<?php echo $description; ?>
-                        	<?php echo $a3_lazy_load_uploader->upload_input( $name_attribute, $id_attribute, $option_value, $attachment_id, $value['default'], esc_html( $value['name'] ), $class, esc_attr( $value['css'] ) , '', $strip_methods );?>
+						<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>">
+                        	<?php $this->esc_description_e( $description ); ?>
+                        	<?php $this->esc_attribute_name_e( $GLOBALS[$this->plugin_prefix.'uploader']->upload_input( $name_attribute, $id_attribute, $option_value, $attachment_id, $value['default'], $value['name'], $class, esc_attr( $value['css'] ) , '', $strip_methods ) );?>
 						</td>
 					</tr><?php
 									
@@ -3222,11 +3480,11 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 					
 					?><tr valign="top">
 						<th scope="row" class="titledesc">
-                        	<?php echo $tip; ?>
-							<label for="<?php echo $id_attribute; ?>"><?php echo esc_html( $value['name'] ); ?></label>
+                        	<?php echo wp_kses_post( $tip ); ?>
+							<label for="<?php echo esc_attr( $id_attribute ); ?>"><?php echo wp_kses_post( $value['name'] ); ?></label>
 						</th>
-						<td class="forminp forminp-<?php echo sanitize_title( $value['type'] ) ?>">
-                        	<?php echo $description; ?>
+						<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>">
+                        	<?php $this->esc_description_e( $description ); ?>
                             <?php remove_all_filters('mce_external_plugins'); ?>
                         	<?php wp_editor( 	$option_value, 
 												$id_attribute, 
@@ -3246,11 +3504,11 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 					
 					?><tr valign="top">
 						<th scope="row" class="titledesc">
-                        	<?php echo $tip; ?>
-							<label for="<?php echo $id_attribute; ?>"><?php echo esc_html( $value['name'] ); ?></label>
+                        	<?php echo wp_kses_post( $tip ); ?>
+							<label for="<?php echo esc_attr( $id_attribute ); ?>"><?php echo wp_kses_post( $value['name'] ); ?></label>
 						</th>
-						<td class="forminp forminp-<?php echo sanitize_title( $value['type'] ) ?>">
-                        	<?php echo $description; ?>
+						<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>">
+                        	<?php $this->esc_description_e( $description ); ?>
                         	<div class="a3rev-ui-array_textfields-container">
                            	<?php
 							foreach ( $value['ids'] as $text_field ) {
@@ -3307,13 +3565,13 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 								}
 							?>
                                 <label><input
-                                    name="<?php echo $name_attribute; ?>"
-                                    id="<?php echo $id_attribute; ?>"
+                                    name="<?php $this->esc_attribute_name_e( $name_attribute ); // WPCS: XSS ok. ?>"
+                                    id="<?php echo esc_attr( $id_attribute ); ?>"
                                     type="text"
                                     style="<?php echo esc_attr( $text_field['css'] ); ?>"
                                     value="<?php echo esc_attr( $option_value ); ?>"
-                                    class="a3rev-ui-<?php echo sanitize_title( $value['type'] ) ?> <?php echo esc_attr( $text_field['class'] ); ?>"
-                                    /> <span><?php echo esc_html( $text_field['name'] ); ?></span></label> 
+                                    class="a3rev-ui-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?> <?php echo esc_attr( $text_field['class'] ); ?>"
+                                    /> <span><?php echo wp_kses_post( $text_field['name'] ); ?></span></label> 
 							<?php
 							}
 							?>
@@ -3327,26 +3585,26 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 				// Time Picker Control
 				case 'time_picker':
 				
-					$class = 'a3rev-ui-' . sanitize_title( $value['type'] ) . ' ' . esc_attr( $value['class'] );
+					$class = 'a3rev-ui-' . sanitize_title( $value['type'] ) . ' ' . $value['class'];
 
 					?><tr valign="top">
 						<th scope="row" class="titledesc">
-                        	<?php echo $tip; ?>
-							<label for="<?php echo $id_attribute; ?>"><?php echo esc_html( $value['name'] ); ?></label>
+                        	<?php echo wp_kses_post( $tip ); ?>
+							<label for="<?php echo esc_attr( $id_attribute ); ?>"><?php echo wp_kses_post( $value['name'] ); ?></label>
 						</th>
-						<td class="forminp forminp-<?php echo sanitize_title( $value['type'] ) ?>">
+						<td class="forminp forminp-<?php echo esc_attr( sanitize_title( $value['type'] ) ); ?>">
                         	<input
                         		readonly="readonly"
-								name="<?php echo $name_attribute; ?>"
-								id="<?php echo $id_attribute; ?>"
+								name="<?php $this->esc_attribute_name_e( $name_attribute ); // WPCS: XSS ok. ?>"
+								id="<?php echo esc_attr( $id_attribute ); ?>"
 								type="text"
 								value="<?php echo esc_attr( $option_value ); ?>"
-								class="<?php echo $class; ?>"
+								class="<?php echo esc_attr( $class ); ?>"
 								<?php if ( ! empty( $value['time_step'] ) ) { ?>data-time_step="<?php echo esc_attr( $value['time_step'] ); ?>"<?php } ?>
 								<?php if ( ! empty( $value['time_min'] ) ) { ?>data-time_min="<?php echo esc_attr( $value['time_min'] ); ?>"<?php } ?>
 								<?php if ( ! empty( $value['time_max'] ) ) { ?>data-time_max="<?php echo esc_attr( $value['time_max'] ); ?>"<?php } ?>
 								<?php if ( ! empty( $value['time_allow'] ) ) { ?>data-time_max="<?php echo esc_attr( $value['time_allow'] ); ?>"<?php } ?>
-								/> <?php echo $description; ?>
+								/> <?php $this->esc_description_e( $description ); ?>
 						</td>
 					</tr><?php
 									
@@ -3442,10 +3700,11 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 			</div> <!-- Close Panel Row -->
 		<?php do_action( $this->plugin_name . '-' . trim( $form_key ) . '_settings_end' ); ?>
             <p class="submit">
-                    <input type="submit" value="<?php _e('Save changes', 'a3-lazy-load' ); ?>" class="button button-primary" name="bt_save_settings" />
-                    <input type="submit" name="bt_reset_settings" class="button" value="<?php _e('Reset Settings', 'a3-lazy-load' ); ?>"  />
-                    <input type="hidden" name="form_name_action" value="<?php echo $form_key; ?>"  />
-                    <input type="hidden" class="last_tab" name="subtab" value="#<?php echo $current_subtab; ?>" />
+            		<?php wp_nonce_field( 'save_settings_'. $this->plugin_name ); ?>
+                    <input type="submit" value="<?php esc_attr_e('Save changes', 'a3-lazy-load'); ?>" class="button button-primary" name="bt_save_settings" />
+                    <input type="submit" name="bt_reset_settings" class="button" value="<?php esc_attr_e('Reset Settings', 'a3-lazy-load'); ?>"  />
+                    <input type="hidden" name="form_name_action" value="<?php echo esc_attr( $form_key ); ?>"  />
+                    <input type="hidden" class="last_tab" name="subtab" value="#<?php echo esc_attr( $current_subtab ); ?>" />
             </p>
         
 		</form>
@@ -3531,7 +3790,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 			// open box handle
 			echo '<div data-form-key="custom-boxes" data-box-id="'. esc_attr( $heading_box_id ) .'" class="a3rev_panel_box_handle" >' . "\n\n";
 
-			echo ( ! empty( $options['name'] ) ) ? '<h3 class="a3-plugin-ui-panel-box '. $toggle_box_class . ' ' . $opened_class . '">'. esc_html( $options['name'] ) .' '. $view_doc .'</h3>' : '';
+			echo ( ! empty( $options['name'] ) ) ? '<h3 class="a3-plugin-ui-panel-box '. esc_attr( $toggle_box_class ) . ' ' . esc_attr( $opened_class ) . '">'. wp_kses_post( $options['name'] ) .' '. wp_kses_post( wptexturize( $view_doc ) ) .'</h3>' : '';
 
 			if ( stristr( $options['class'], 'pro_feature_fields' ) !== false && ! empty( $options['id'] ) ) $this->upgrade_top_message( true, sanitize_title( $options['id'] ) );
 			elseif ( stristr( $options['class'], 'pro_feature_fields' ) !== false ) $this->upgrade_top_message( true );
@@ -3540,7 +3799,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 			echo '</div>' . "\n\n";
 
 			// open box inside
-			echo '<div id="'. esc_attr( $options['id'] ) . '_box_inside" class="a3rev_panel_box_inside '.$opened_class.'" style="padding-top: 10px;" >' . "\n\n";
+			echo '<div id="'. esc_attr( $options['id'] ) . '_box_inside" class="a3rev_panel_box_inside '. esc_attr( $opened_class) .'" style="padding-top: 10px;" >' . "\n\n";
 
 			echo '<div class="a3rev_panel_inner">' . "\n\n";
 
@@ -3549,16 +3808,16 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 			if ( stristr( $options['class'], 'pro_feature_fields' ) !== false && ! empty( $options['id'] ) ) $this->upgrade_top_message( true, sanitize_title( $options['id'] ) );
 			elseif ( stristr( $options['class'], 'pro_feature_fields' ) !== false ) $this->upgrade_top_message( true );
 
-			echo ( ! empty( $options['name'] ) ) ? '<h3>'. esc_html( $options['name'] ) .' '. $view_doc .'</h3>' : '';
+			echo ( ! empty( $options['name'] ) ) ? '<h3>'. wp_kses_post( $options['name'] ) .' '. wp_kses_post( wptexturize( $view_doc ) ) .'</h3>' : '';
 		}
 
 		if ( ! empty( $options['desc'] ) ) {
 			echo '<div class="a3rev_panel_box_description" >' . "\n\n";
-			echo wpautop( wptexturize( $options['desc'] ) );
+			echo wp_kses_post( wpautop( wptexturize( $options['desc'] ) ) );
 			echo '</div>' . "\n\n";
 		}
 
-		echo $settings_html;
+		echo wptexturize( $settings_html );
 
 		echo '</div>';
 
@@ -3582,6 +3841,74 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 		}
 		
 		return $values;
+	}
+
+	/*-----------------------------------------------------------------------------------*/
+	/* Escape for an attribute array before echo */
+	/*-----------------------------------------------------------------------------------*/
+	private function esc_attribute_array_e( $attributes = array() ) {
+		if ( empty( $attributes ) ) {
+			echo '';
+			return true;
+		}
+
+		if ( ! is_array( $attributes ) ) {
+			$attributes = array( $attributes );
+		}
+
+		foreach ( $attributes as $attribute => $attribute_value ) {
+			echo ( esc_attr( $attribute ) . '="' . esc_attr( $attribute_value ) . '" ' );
+		}
+	}
+
+	/*-----------------------------------------------------------------------------------*/
+	/* Escape for attribute name */
+	/*-----------------------------------------------------------------------------------*/
+	private function esc_attribute_name__( $attribute_name = '', $forced_escape = false ) {
+		if ( empty( $attribute_name ) ) {
+			return '';
+		} elseif ( $forced_escape ) {
+			return esc_attr( $attribute_name );
+		} else {
+			return $attribute_name;
+		}
+	}
+
+	/*-----------------------------------------------------------------------------------*/
+	/* Escape for attribute name before echo */
+	/*-----------------------------------------------------------------------------------*/
+	private function esc_attribute_name_e( $attribute_name = '', $forced_escape = false ) {
+		echo $this->esc_attribute_name__( $attribute_name, $forced_escape );
+	}
+
+	/*-----------------------------------------------------------------------------------*/
+	/* Escape for description allow some html before echo */
+	/*-----------------------------------------------------------------------------------*/
+	private function esc_description_e( $description = '' ) {
+		if ( empty( $description ) ) {
+			echo '';
+			return true;
+		}
+
+		$allowedposttags = array();
+		if ( function_exists( 'wp_kses_allowed_html' ) ) {
+			$allowedposttags = wp_kses_allowed_html();
+		}
+		
+		$allowed_html = array_merge( $allowedposttags, 
+			array( 
+				'input' => array( 
+					'type'  => array(),
+					'class' => array(),
+					'id'    => array(),
+					'name'  => array(),
+					'value' => array(),
+					'style  =' => array(),
+				)
+			)
+		);
+
+		echo wp_kses( $description, $allowed_html );
 	}
 
 	/*-----------------------------------------------------------------------------------*/
@@ -3624,8 +3951,12 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 	public function generate_border_css( $option ) {
 		
 		$border_css = '';
-		
-		$border_css .= 'border: ' . esc_attr( $option['width'] ) . ' ' . esc_attr( $option['style'] ) . ' ' . esc_attr( $option['color'] ) .' !important;';
+
+		if ( empty( $option['width'] ) || '0px' == $option['width'] ) {
+			$border_css .= 'border: none !important;';
+		} else {
+			$border_css .= 'border: ' . esc_attr( $option['width'] ) . ' ' . esc_attr( $option['style'] ) . ' ' . esc_attr( $option['color'] ) .' !important;';
+		}
 			
 		if ( isset( $option['corner'] ) && esc_attr( $option['corner'] ) == 'rounded' ) {
 			if ( ! isset( $option['rounded_value'] ) ) $option['rounded_value'] = 0;
@@ -3643,8 +3974,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 			$border_css .= '-webkit-border-radius: 0px !important;';	
 		}
 		
-		return $border_css;
-		
+		return apply_filters( $this->plugin_name . '_generate_border_css', $border_css, $option );
 	}
 	
 	/*-----------------------------------------------------------------------------------*/
@@ -3654,11 +3984,14 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 	public function generate_border_style_css( $option ) {
 		
 		$border_style_css = '';
+
+		if ( empty( $option['width'] ) || '0px' == $option['width'] ) {
+			$border_style_css .= 'border: none !important;';
+		} else {
+			$border_style_css .= 'border: ' . esc_attr( $option['width'] ) . ' ' . esc_attr( $option['style'] ) . ' ' . esc_attr( $option['color'] ) .' !important;';
+		}
 		
-		$border_style_css .= 'border: ' . esc_attr( $option['width'] ) . ' ' . esc_attr( $option['style'] ) . ' ' . esc_attr( $option['color'] ) .' !important;';
-		
-		return $border_style_css;
-		
+		return apply_filters( $this->plugin_name . '_generate_border_style_css', $border_style_css, $option );
 	}
 	
 	/*-----------------------------------------------------------------------------------*/
@@ -3685,8 +4018,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 			$border_corner_css .= '-webkit-border-radius: 0px !important;';
 		}
 		
-		return $border_corner_css;
-		
+		return apply_filters( $this->plugin_name . '_generate_border_corner_css', $border_corner_css, $option );
 	}
 	
 	/*-----------------------------------------------------------------------------------*/
@@ -3708,8 +4040,7 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
             $shadow_css .= '-webkit-box-shadow: none !important ;';
 		}
 		
-		return $shadow_css;
-		
+		return apply_filters( $this->plugin_name . '_generate_shadow_css', $shadow_css, $option );		
 	}
 
 	/*-----------------------------------------------------------------------------------*/
@@ -3738,13 +4069,9 @@ class A3_Lazy_Load_Admin_Interface extends A3_Lazy_Load_Admin_UI
 			$return_css .= 'background-color: transparent !important ;';
 		}
 
-		return $return_css;
-
+		return apply_filters( $this->plugin_name . '_generate_background_color_css', $return_css, $option, $transparency );		
 	}
 
 }
 
-global $a3_lazy_load_admin_interface;
-$a3_lazy_load_admin_interface = new A3_Lazy_Load_Admin_Interface();
-
-?>
+}

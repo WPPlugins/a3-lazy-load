@@ -1,9 +1,11 @@
 <?php
 /* "Copyright 2012 a3 Revolution Web Design" This software is distributed under the terms of GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007 */
+
+namespace A3Rev\LazyLoad\FrameWork {
+
 // File Security Check
 if ( ! defined( 'ABSPATH' ) ) exit;
-?>
-<?php
+
 /*-----------------------------------------------------------------------------------
 A3rev Plugin Admin UI
 
@@ -24,22 +26,24 @@ TABLE OF CONTENTS
 
 -----------------------------------------------------------------------------------*/
 
-class A3_Lazy_Load_Admin_UI
+class Admin_UI
 {
 	/**
 	 * @var string
 	 * You must change to correct plugin name that you are working
 	 */
 
-	public $framework_version      = '2.0.3';
-	public $plugin_name            = A3_LAZY_LOAD_KEY;
-	public $plugin_path            = A3_LAZY_LOAD_NAME;
-	public $google_api_key_option  = '';
-	public $toggle_box_open_option = '';
-	public $version_transient      = '';
-	public $is_free_plugin         = true;
-	
-	public $support_url            = 'https://wordpress.org/support/plugin/a3-lazy-load/';
+	public $framework_version         = '2.7.0';
+	public $plugin_name               = A3_LAZY_LOAD_KEY;
+	public $plugin_path               = A3_LAZY_LOAD_NAME;
+	public $google_api_key_option     = '';
+	public $google_map_api_key_option = '';
+	public $google_map_api_key        = '';
+	public $toggle_box_open_option    = '';
+	public $version_transient         = '';
+	public $is_free_plugin            = true;
+	public $is_load_google_fonts      = true;
+	public $support_url               = '';
 
 
 	/**
@@ -47,6 +51,8 @@ class A3_Lazy_Load_Admin_UI
 	 * You must change to correct class name that you are working
 	 */
 	public $class_name = 'A3_Lazy_Load';
+
+	public $plugin_prefix = A3_LAZY_LOAD_PREFIX;
 
 	/**
 	 * @var string
@@ -71,12 +77,19 @@ class A3_Lazy_Load_Admin_UI
 	public $admin_pages = array( 'a3-lazy-load', 'a3-lazy-load-add' );
 
 	public function __construct() {
-		$this->google_api_key_option  = A3_LAZY_LOAD_KEY . '_google_api_key';
-		$this->toggle_box_open_option = A3_LAZY_LOAD_KEY . '_toggle_box_open';
-		$this->version_transient      = A3_LAZY_LOAD_KEY . '_licinfo';
+		$this->google_api_key_option     = A3_LAZY_LOAD_KEY . '_google_api_key';
+		$this->google_map_api_key_option = A3_LAZY_LOAD_KEY . '_google_map_api_key';
+		$this->toggle_box_open_option    = A3_LAZY_LOAD_KEY . '_toggle_box_open';
+		$this->version_transient         = A3_LAZY_LOAD_KEY . '_licinfo';
+
+		if ( defined( 'A3_LAZY_LOAD_G_FONTS' ) ) {
+			$this->is_load_google_fonts = (boolean) A3_LAZY_LOAD_G_FONTS;
+		}
+
+		$this->support_url = esc_url( 'https://wordpress.org/support/plugin/a3-lazy-load/' );
 	}
-
-
+	
+	
 	/*-----------------------------------------------------------------------------------*/
 	/* admin_plugin_url() */
 	/*-----------------------------------------------------------------------------------*/
@@ -102,6 +115,108 @@ class A3_Lazy_Load_Admin_UI
 		return (array)$admin_pages;
 	}
 
+	public function is_valid_google_map_api_key( $cache=true ) {
+		$is_valid = false;
+
+		$this->google_map_api_key  = get_option( $this->google_map_api_key_option, '' );
+		$google_map_api_key_enable = get_option( $this->google_map_api_key_option . '_enable', 0 );
+
+		if ( '' != trim( $this->google_map_api_key ) && 1 == $google_map_api_key_enable ) {
+
+			$google_map_api_key_status = get_transient( $this->google_map_api_key_option . '_status' );
+
+			if ( ! $cache ) {
+				$google_map_api_key_status = null;
+			}
+
+			if ( ! $google_map_api_key_status ) {
+				$is_valid = $this->validate_google_map_api_key( $this->google_map_api_key );
+			} elseif ( 'valid' == $google_map_api_key_status ) {
+				$is_valid = true;
+			}
+
+		}
+
+		return $is_valid;
+	}
+
+	public function validate_google_map_api_key( $g_key = '' ) {
+		$g_key = trim( $g_key );
+		$is_valid = false;
+
+		if ( ! empty( $g_key ) ) {
+			$respone_api = wp_remote_get( "https://maps.googleapis.com/maps/api/geocode/json?address=Australia&key=" . $g_key,
+				array(
+					'timeout'   => 45
+				)
+			);
+
+			$response_map = array();
+
+			// Check it is a valid request
+			if ( ! is_wp_error( $respone_api ) ) {
+
+				$json_string = stripslashes( $respone_api['body'] );
+				$response_map = json_decode( $json_string, true );
+
+				// Make sure that the valid response from google is not an error message
+				if ( ! isset( $response_map['error_message'] ) ) {
+					$is_valid = true;
+				}
+			}
+
+			if ( $is_valid ) {
+				$google_map_api_key_status = 'valid';
+			} else {
+				$google_map_api_key_status = 'invalid';
+			}
+
+			//caching google map api status for 24 hours
+			set_transient( $this->google_map_api_key_option . '_status', $google_map_api_key_status, 86400 );
+		}
+
+		return $is_valid;
+	}
+
+	public function update_google_map_api_key() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return false;
+		}
+
+		check_admin_referer( 'save_settings_' . $this->plugin_name );
+
+		// Enable Google Map API Key
+		if ( isset( $_POST[ $this->google_map_api_key_option . '_enable' ] ) ) {
+
+			$old_google_map_api_key_enable = get_option( $this->google_map_api_key_option . '_enable', 0 );
+
+			update_option( $this->google_map_api_key_option . '_enable', 1 );
+
+			$option_value = trim( sanitize_text_field( wp_unslash( $_POST[ $this->google_map_api_key_option ] ) ) );
+			update_option( $this->google_map_api_key_option, $option_value );
+
+			if ( 1 != $old_google_map_api_key_enable ) {
+
+				// Clear cached of google map api key status
+				delete_transient( $this->google_map_api_key_option . '_status' );
+			}
+
+		// Disable Google Map API Key
+		} elseif ( isset( $_POST[ $this->google_map_api_key_option ] ) ) {
+			$old_google_map_api_key_enable = get_option( $this->google_map_api_key_option . '_enable', 0 );
+
+			update_option( $this->google_map_api_key_option . '_enable', 0 );
+
+			$option_value = trim( sanitize_text_field( wp_unslash( $_POST[ $this->google_map_api_key_option ] ) ) );
+			update_option( $this->google_map_api_key_option, $option_value );
+
+			if ( 0 != $old_google_map_api_key_enable ) {
+				// Clear cached of google map api key status
+				delete_transient( $this->google_map_api_key_option . '_status' );
+			}
+		}
+	} 
+
 	/**
 	 * get_premium_video_data()
 	 * return array
@@ -113,11 +228,11 @@ class A3_Lazy_Load_Admin_UI
 				'image_url'    => A3_LAZY_LOAD_IMAGES_URL. '/video.jpg',
 				'video_url'    => 'https://www.youtube.com/embed/9dGw-ORfMIk?version=3&autoplay=1',
 				'left_title'   => __( 'Premium Version Enhanced Features', 'a3-lazy-load' ),
-				'left_text'    => __( 'WooCommerce Dynamic Gallery Premium', 'a3-lazy-load' )
-									. "\n\n" . __( 'Quick Video showing the main (not all) enhanced features that are built into the WooCommerce Dynamic Gallery Premium version', 'a3-lazy-load' ),
+				'left_text'    => __( 'a3 Lazy Load Premium', 'a3-lazy-load' )
+									. "\n\n" . __( 'Quick Video showing the main (not all) enhanced features that are built into the a3 Lazy Load Premium version', 'a3-lazy-load' ),
 				'right_title'  => __( 'Developer Support and Premium Features', 'a3-lazy-load' ),
 				'right_text'   => __( 'Limited Time Offer. Purchase the Premium Version Lifetime License. That is a Lifetime of maintenance updates, feature upgrades and developer support for a once only fee. Offer ending soon.', 'a3-lazy-load' )
-									. "\n\n" . '<a target="_blank" href="'.$this->pro_plugin_page_url.'" class="button-primary">' . __( 'Get Premium Features and Support', '' ) . '</a>',
+									. "\n\n" . '<a target="_blank" rel="noopener" href="'.$this->pro_plugin_page_url.'" class="button-primary">' . __( 'Get Premium Features and Support', '' ) . '</a>',
 			);
 
 		return $premium_video_data;
@@ -143,7 +258,7 @@ class A3_Lazy_Load_Admin_UI
 		$output = apply_filters( $this->plugin_name . '_plugin_premium_video', $output );
 
 		if ( $echo )
-			echo $output;
+			echo wp_kses_post( $output );
 		else
 			return $output;
 	}
@@ -164,7 +279,7 @@ class A3_Lazy_Load_Admin_UI
 		$output .= '</div>';
 
 		if ( $echo )
-			echo $output;
+			echo wp_kses_post( $output );
 		else
 			return $output;
 	}
@@ -182,7 +297,7 @@ class A3_Lazy_Load_Admin_UI
 		}
 
 		if ( $echo )
-			echo $output;
+			echo wp_kses_post( $output );
 		else
 			return $output;
 	}
@@ -216,7 +331,7 @@ class A3_Lazy_Load_Admin_UI
 		}
 
 		if ( $echo )
-			echo $output;
+			echo wp_kses_post( $output );
 		else
 			return $output;
 	}
@@ -237,7 +352,7 @@ class A3_Lazy_Load_Admin_UI
 		$output = apply_filters( $this->plugin_name . '_plugin_extension_start', $output );
 
 		if ( $echo )
-			echo $output;
+			echo wp_kses_post( $output );
 		else
 			return $output;
 	}
@@ -253,7 +368,7 @@ class A3_Lazy_Load_Admin_UI
 		$output = apply_filters( $this->plugin_name . '_plugin_extension_end', $output );
 
 		if ( $echo )
-			echo $output;
+			echo wp_kses_post( $output );
 		else
 			return $output;
 
@@ -265,7 +380,7 @@ class A3_Lazy_Load_Admin_UI
 	/*-----------------------------------------------------------------------------------*/
 	public function upgrade_top_message( $echo = false, $setting_id = '' ) {
 		$upgrade_top_message = sprintf( '<div class="pro_feature_top_message">'
-			. __( 'Advanced Settings - Upgrade to the <a href="%s" target="_blank">%s License</a> to activate these settings.', 'a3-lazy-load' )
+			. __( 'Advanced Settings - Upgrade to the <a href="%s" target="_blank" rel="noopener">%s License</a> to activate these settings.', 'a3-lazy-load' )
 			. '</div>'
 			, apply_filters( $this->plugin_name . '_' . $setting_id . '_pro_plugin_page_url', apply_filters( $this->plugin_name . '_pro_plugin_page_url', $this->pro_plugin_page_url ) )
 			, apply_filters( $this->plugin_name . '_' . $setting_id . '_pro_version_name', apply_filters( $this->plugin_name . '_pro_version_name', __( 'Pro Version', 'a3-lazy-load' ) ) )
@@ -273,7 +388,7 @@ class A3_Lazy_Load_Admin_UI
 
 		$upgrade_top_message = apply_filters( $this->plugin_name . '_upgrade_top_message', $upgrade_top_message, $setting_id );
 
-		if ( $echo ) echo $upgrade_top_message;
+		if ( $echo ) echo wp_kses_post( $upgrade_top_message );
 		else return $upgrade_top_message;
 
 	}
@@ -320,7 +435,7 @@ class A3_Lazy_Load_Admin_UI
 			if ( false === $timeout ) {
 				$version_message = __( 'You should check now to see if have any new version is available', 'a3-lazy-load' );
 			} elseif ( 'cannot_connect_api' == $version_transient ) {
-				$version_message = sprintf( __( 'Connection Failure! Please try again. If this issue persists please create a support request on the plugin <a href="%s" target="_blank">a3rev support forum</a>.', 'a3-lazy-load' ), $this->support_url );
+				$version_message = sprintf( __( 'Connection Failure! Please try again. If this issue persists please create a support request on the plugin <a href="%s" target="_blank" rel="noopener">a3rev support forum</a>.', 'a3-lazy-load' ), $this->support_url );
 			} else {
 				$version_info = explode( '||', $version_transient );
 				if ( FALSE !== stristr( $version_transient, '||' )
@@ -328,7 +443,7 @@ class A3_Lazy_Load_Admin_UI
 					&& isset( $version_info[1] ) && $version_info[1] == 'valid'
 					&& version_compare( A3_LAZY_VERSION , $version_info[0], '<' ) ) {
 
-						$version_message = sprintf( __( 'There is a new version <span class="a3rev-ui-new-plugin-version">%s</span> available, <a href="%s" target="_blank">update now</a> or download direct from <a href="%s" target="_blank">My Account</a> on a3rev.com', 'a3-lazy-load' ),
+						$version_message = sprintf( __( 'There is a new version <span class="a3rev-ui-new-plugin-version">%s</span> available, <a href="%s" target="_blank" rel="noopener">update now</a> or download direct from <a href="%s" target="_blank" rel="noopener">My Account</a> on a3rev.com', 'a3-lazy-load' ),
 							$version_info[0],
 							wp_nonce_url( self_admin_url( 'update.php?action=upgrade-plugin&plugin=' . $this->plugin_path ), 'upgrade-plugin_' . $this->plugin_path ),
 							'https://a3rev.com/my-account/downloads/'
@@ -345,4 +460,4 @@ class A3_Lazy_Load_Admin_UI
 
 }
 
-?>
+}

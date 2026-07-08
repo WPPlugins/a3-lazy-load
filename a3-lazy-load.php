@@ -2,11 +2,11 @@
 /*
 Plugin Name: a3 Lazy Load
 Description: Speed up your site and enhance frontend user's visual experience in PC's, Tablets and mobile with a3 Lazy Load.
-Version: 1.8.7
+Version: 2.7.9
 Author: a3rev Software
 Author URI: https://a3rev.com/
-Requires at least: 4.0
-Tested up to: 4.9.4
+Requires at least: 6.0
+Tested up to: 7.0
 Text Domain: a3-lazy-load
 Domain Path: /languages
 License: GPLv2 or later
@@ -30,7 +30,36 @@ define('A3_LAZY_LOAD_CSS_URL', A3_LAZY_LOAD_URL . '/assets/css');
 define('A3_LAZY_LOAD_IMAGES_URL', A3_LAZY_LOAD_URL . '/assets/images');
 
 define( 'A3_LAZY_LOAD_KEY', 'a3_lazy_load' );
-define( 'A3_LAZY_VERSION', '1.8.7' );
+define( 'A3_LAZY_LOAD_PREFIX', 'a3_lazy_load_' );
+define( 'A3_LAZY_VERSION', '2.7.9' );
+define( 'A3_LAZY_LOAD_G_FONTS', false );
+
+use \A3Rev\LazyLoad\FrameWork;
+
+if ( version_compare( PHP_VERSION, '5.6.0', '>=' ) ) {
+	require __DIR__ . '/vendor/autoload.php';
+
+	/**
+	 * Plugin Framework init
+	 */
+	$GLOBALS[A3_LAZY_LOAD_PREFIX.'admin_interface'] = new FrameWork\Admin_Interface();
+
+	global $a3_lazy_load_settings_page;
+	$a3_lazy_load_settings_page = new FrameWork\Pages\Settings();
+
+	$GLOBALS[A3_LAZY_LOAD_PREFIX.'admin_init'] = new FrameWork\Admin_Init();
+
+	$GLOBALS[A3_LAZY_LOAD_PREFIX.'less'] = new FrameWork\Less_Sass();
+
+	// End - Plugin Framework init
+
+
+	global $a3_lazy_load_excludes;
+	$a3_lazy_load_excludes = new \A3Rev\LazyLoad\Excludes();
+	
+} else {
+	return;
+}
 
 /**
  * Load Localisation files.
@@ -52,21 +81,15 @@ function a3_lazy_load_plugin_textdomain() {
 // Disable for load new google font faces
 add_filter( A3_LAZY_LOAD_KEY . '_new_google_fonts_enable', '__return_false' );
 
-include( 'admin/admin-ui.php' );
-include( 'admin/admin-interface.php' );
+// Backwards compatibility for 3rd party plugin use functions from this plugin
+include( 'classes/classes-backwards-compatibility.php' );
 
-include( 'admin/admin-pages/admin-settings-page.php' );
-
-include( 'admin/admin-init.php' );
-include( 'admin/less/sass.php' );
-
-include( 'classes/class-a3-lazy-load.php' );
-include( 'classes/class-a3-lazy-load-filter.php' );
+require __DIR__ . '/compat/wp-rocket-defer-inline-exclusions.php';
 
 include( 'admin/a3-lazy-load-admin.php' );
 
 // Defined this function for check Lazy Load is enabled that 3rd party plugins or theme can use to check
-$a3_lazy_load_global_settings = get_option( 'a3_lazy_load_global_settings', array( 'a3l_apply_lazyloadxt' => 1, 'a3l_apply_to_images' => 1, 'a3l_apply_to_videos' => 1 ) );
+$a3_lazy_load_global_settings = get_option( 'a3_lazy_load_global_settings', array( 'a3l_apply_lazyloadxt' => 1, 'a3l_wpcore_lazyload' => 1, 'a3l_apply_to_images' => 1, 'a3l_apply_to_videos' => 1 ) );
 if ( 1 == $a3_lazy_load_global_settings['a3l_apply_lazyloadxt'] && !is_admin() && ( 1 == $a3_lazy_load_global_settings['a3l_apply_to_images'] || 1 == $a3_lazy_load_global_settings['a3l_apply_to_videos'] ) ) {
 	function a3_lazy_load_enable() {
 		return true;
@@ -82,10 +105,11 @@ if ( 1 == $a3_lazy_load_global_settings['a3l_apply_lazyloadxt'] && !is_admin() &
 		return true;
 	}
 }
+if ( !is_admin() && isset( $a3_lazy_load_global_settings['a3l_wpcore_lazyload'] ) && 0 == $a3_lazy_load_global_settings['a3l_wpcore_lazyload'] ) {
+	add_filter( 'wp_lazy_loading_enabled', '__return_false' );
+}
 
 /**
  * Call when the plugin is activated
  */
 register_activation_hook(__FILE__, 'a3_lazy_load_activated');
-
-?>

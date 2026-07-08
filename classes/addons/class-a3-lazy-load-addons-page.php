@@ -1,9 +1,12 @@
 <?php
+
+namespace A3Rev\LazyLoad;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-class A3_Lazy_Load_Addons_Page
+class Addons
 {
 	public function __construct() {
 
@@ -58,7 +61,7 @@ class A3_Lazy_Load_Addons_Page
 		<a class="nav-tab" id="extensions-tab" href="admin.php?page=a3-lazy-load-addons"><?php echo __( 'Add-ons', 'a3-lazy-load' ); ?></a>
 		<?php foreach ( $addons_tabs as $key => $tab ) : ?>
 
-		<a class="nav-tab" id="<?php echo esc_attr( $key ); ?>-tab" href="admin.php?page=a3-lazy-load-addons&view=<?php echo $tab['view']; ?>"><?php echo $tab['name']; ?></a>
+		<a class="nav-tab" id="<?php echo esc_attr( $key ); ?>-tab" href="admin.php?page=a3-lazy-load-addons&view=<?php echo esc_attr( $tab['view'] ); ?>"><?php echo esc_html( $tab['name'] ); ?></a>
 
 		<?php endforeach; ?>
 	</h2>
@@ -188,7 +191,7 @@ class A3_Lazy_Load_Addons_Page
 
 				<div class="extension-card <?php echo esc_attr( $id ); ?>">
 					<a class="extension-card-header" target="_blank" href="<?php echo esc_url( $addon->url ); ?>">
-						<h3 style="<?php echo $header_style; ?>"><span class="extension-title" style="<?php echo $title_style; ?>"><?php echo esc_html( $addon->title ); ?></span></h3>
+						<h3 style="<?php echo esc_attr( $header_style ); ?>"><span class="extension-title" style="<?php echo esc_attr( $title_style ); ?>"><?php echo esc_html( $addon->title ); ?></span></h3>
 					</a>
 
 					<p><?php echo esc_html( $addon->desc ); ?></p>
@@ -221,5 +224,3 @@ class A3_Lazy_Load_Addons_Page
 		<?php
 	}
 }
-
-return new A3_Lazy_Load_Addons_Page();

@@ -1,9 +1,11 @@
 <?php
 /* "Copyright 2012 a3 Revolution Web Design" This software is distributed under the terms of GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007 */
+
+namespace A3Rev\LazyLoad\FrameWork {
+
 // File Security Check
 if ( ! defined( 'ABSPATH' ) ) exit;
-?>
-<?php
+
 /*-----------------------------------------------------------------------------------
 A3rev Plugin Uploader
 
@@ -22,7 +24,7 @@ TABLE OF CONTENTS
 - inside_popup()
 
 -----------------------------------------------------------------------------------*/
-class A3_Lazy_Load_Uploader extends A3_Lazy_Load_Admin_UI
+class Uploader extends Admin_UI
 {
 
 	/**
@@ -37,7 +39,7 @@ class A3_Lazy_Load_Uploader extends A3_Lazy_Load_Admin_UI
 		if ( is_admin() ) {
 
 			// include scripts to Admin UI Interface
-			add_action( $this->plugin_name . '_init_scripts', array( $this, 'uploader_js' ) );
+			add_action( $this->plugin_name . '_init_scripts', array( $this, 'uploader_script' ) );
 
 			// include styles to Admin UI Interface
 			add_action( $this->plugin_name . '_init_styles', array( $this, 'uploader_style' ) );
@@ -51,6 +53,10 @@ class A3_Lazy_Load_Uploader extends A3_Lazy_Load_Admin_UI
 	public function admin_uploader_url() {
 		if ( $this->admin_uploader_url ) return $this->admin_uploader_url;
 		return $this->admin_uploader_url = untrailingslashit( plugins_url( '/', __FILE__ ) );
+	}
+
+	public function uploader_script() {
+		add_action( 'admin_enqueue_scripts', array( $this, 'uploader_js' ) );
 	}
 
 	/*-----------------------------------------------------------------------------------*/
@@ -79,15 +85,20 @@ class A3_Lazy_Load_Uploader extends A3_Lazy_Load_Admin_UI
 	/*-----------------------------------------------------------------------------------*/
 	/* Get Upload Input Field */
 	/*-----------------------------------------------------------------------------------*/
-	public function upload_input ( $name_attribute, $id_attribute = '', $value = '', $attachment_id = 0, $default_value = '', $field_name = '', $class = '', $css = '', $description = '', $strip_methods = true ) {
+	public function upload_input ( $name_attribute, $id_attribute = '', $value = '', $attachment_id = 0, $default_value = '', $field_name = '', $class = '', $css = '', $description = '', $strip_methods = true, $size = 'original' ) {
 		$output = '';
 
 		if ( trim( $value ) == '' ) $value = trim( $default_value );
 
 		if ( strstr( $name_attribute, ']' ) ) {
 			$attachment_id_name_attribute = substr_replace( $name_attribute, '_attachment_id', -1, 0 );
+
+			$attachment_size_name_attribute = substr_replace( $name_attribute, '_attachment_size', -1, 0 );
+
 		} else {
 			$attachment_id_name_attribute = $name_attribute.'_attachment_id';
+
+			$attachment_size_name_attribute = $name_attribute.'_attachment_size';
 		}
 
 		if ( $strip_methods === false ) {
@@ -97,6 +108,7 @@ class A3_Lazy_Load_Uploader extends A3_Lazy_Load_Admin_UI
 		}
 
 		$output .= '<input type="hidden" name="'.$attachment_id_name_attribute.'" id="'.$id_attribute.'_attachment_id" value="'.$attachment_id.'" class=" a3_upload_attachment_id" />';
+		$output .= '<input type="hidden" name="'.$attachment_size_name_attribute.'" id="'.$id_attribute.'_attachment_size" value="'.$size.'" class=" a3_upload_attachment_size" />';
 		$output .= '<input data-strip-methods="'.$strip_methods.'" type="text" name="'.$name_attribute.'" id="'.$id_attribute.'" value="'.esc_attr( $value ).'" class="'.$id_attribute. ' ' .$class.' a3_upload" style="'.$css.'" rel="'.$field_name.'" /> ';
 		$output .= '<input id="upload_'.$id_attribute.'" class="a3rev-ui-upload-button a3_upload_button button" type="button" value="'.__( 'Upload', 'a3-lazy-load' ).'" /> '.$description;
 		
@@ -120,7 +132,7 @@ class A3_Lazy_Load_Uploader extends A3_Lazy_Load_Admin_UI
 
 				$title = __( 'View File', 'a3-lazy-load' );
 
-				$output .= '<div class="a3_no_image"><span class="a3_file_link"><a href="'.esc_url( $value ).'" target="_blank" rel="a3_external">'.$title.'</a></span>'.$remove.'</div>';
+				$output .= '<div class="a3_no_image"><span class="a3_file_link"><a href="'.esc_url( $value ).'" target="_blank" rel="noopener">'.$title.'</a></span>'.$remove.'</div>';
 
 			}
 		}
@@ -131,7 +143,4 @@ class A3_Lazy_Load_Uploader extends A3_Lazy_Load_Admin_UI
 	}
 }
 
-global $a3_lazy_load_uploader;
-$a3_lazy_load_uploader = new A3_Lazy_Load_Uploader();
-
-?>
+}

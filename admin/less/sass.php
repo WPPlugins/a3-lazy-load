@@ -1,9 +1,12 @@
 <?php
+
+namespace A3Rev\LazyLoad\FrameWork {
+
 // File Security Check
 if (!defined('ABSPATH'))
     exit;
 
-class A3_Lazy_Load_Less
+class Less_Sass
 {
     public $plugin_name   = A3_LAZY_LOAD_KEY;
     public $css_file_name = 'a3_lazy_load';
@@ -19,11 +22,22 @@ class A3_Lazy_Load_Less
 		add_action( 'wp_enqueue_scripts', array ($this, 'apply_style_css_fontend') , 12 );
     }
 
+    public function register_dynamic_style_file()
+    {
+        $_upload_dir = wp_upload_dir();
+        if ( file_exists( $_upload_dir['basedir'] . '/sass/' . $this->css_file_name . '.min.css' ) ) {
+            wp_register_style( 'a3' . $this->css_file_name, str_replace( array('http:','https:'), '', $_upload_dir['baseurl'] ) . '/sass/' . $this->css_file_name . '.min.css', array(), $this->get_css_file_version() );
+
+            return true;
+        }
+
+        return false;
+    }
+
 	public function apply_style_css_fontend()
 	{
-		$_upload_dir = wp_upload_dir();
-		if ( file_exists( $_upload_dir['basedir'] . '/sass/' . $this->css_file_name . '.min.css' ) ) {
-			wp_enqueue_style( 'a3' . $this->css_file_name, str_replace( array('http:','https:'), '', $_upload_dir['baseurl'] ) . '/sass/' . $this->css_file_name . '.min.css', array(), $this->get_css_file_version() );
+		if ( $this->register_dynamic_style_file() ) {
+            wp_enqueue_style( 'a3' . $this->css_file_name );
         }
 	}
 
@@ -60,13 +74,9 @@ class A3_Lazy_Load_Less
 
         global $wp_filesystem;
 
-		@ini_set( 'display_errors', false );
         $_upload_dir = wp_upload_dir();
-        $wp_filesystem->chmod($_upload_dir['basedir'], 0755);
         if (! $wp_filesystem->is_dir($_upload_dir['basedir'] . '/sass')) {
             $wp_filesystem->mkdir($_upload_dir['basedir'] . '/sass', 0755);
-        } else {
-            $wp_filesystem->chmod($_upload_dir['basedir'] . '/sass', 0755);
         }
 
 		if ( trim( $css_file_name ) == '' ) $css_file_name = $this->css_file_name;
@@ -92,16 +102,6 @@ class A3_Lazy_Load_Less
             $wp_filesystem->copy($mixinsless, $a3rev_mixins_less, true );
         }
 
-        $files = array_diff(scandir($_upload_dir['basedir'] . '/sass'), array(
-            '.',
-            '..'
-        ));
-        if ($files) {
-            foreach ($files as $file) {
-                $wp_filesystem->chmod($_upload_dir['basedir'] . '/sass/' . $file, 0644);
-            }
-        }
-
         $sass_data = '';
 
         if ($sass != '') {
@@ -124,7 +124,7 @@ class A3_Lazy_Load_Less
                 $wp_filesystem->put_contents($less_file, $sass_data, 0644);
                 $css_file     = $_upload_dir['basedir'] . '/sass/' . $filename . '.css';
                 $css_min_file = $_upload_dir['basedir'] . '/sass/' . $filename . '.min.css';
-                $compile      = new Compile_Less_Sass;
+                $compile      = new \Compile_Less_Sass;
                 $compile->compileLessFile($less_file, $css_file, $css_min_file);
             }
         }
@@ -177,6 +177,6 @@ class A3_Lazy_Load_Less
         return $version_number;
     }
 }
-global $a3_lazy_load_less;
-$a3_lazy_load_less = new A3_Lazy_Load_Less();
-?>
+
+}
+

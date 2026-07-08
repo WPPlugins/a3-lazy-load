@@ -1,9 +1,13 @@
 <?php
 /* "Copyright 2012 a3 Revolution Web Design" This software is distributed under the terms of GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007 */
+
+namespace A3Rev\LazyLoad\FrameWork\Settings {
+
+use A3Rev\LazyLoad\FrameWork;
+
 // File Security Check
 if ( ! defined( 'ABSPATH' ) ) exit;
-?>
-<?php
+
 /*-----------------------------------------------------------------------------------
 a3 LazyLoad General Settings
 
@@ -28,7 +32,7 @@ TABLE OF CONTENTS
 
 -----------------------------------------------------------------------------------*/
 
-class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
+class Global_Panel extends FrameWork\Admin_UI
 {
 
 	/**
@@ -74,13 +78,15 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
 	/* Settings Constructor */
 	/*-----------------------------------------------------------------------------------*/
 	public function __construct() {
-		$this->init_form_fields();
+
+		add_action( 'init', array( $this, 'init_form_fields' ), 100 );
+		//$this->init_form_fields();
 		$this->subtab_init();
 
 		$this->form_messages = array(
-				'success_message'	=> __( 'Settings successfully saved.', 'a3-lazy-load' ),
-				'error_message'		=> __( 'Error: Settings can not save.', 'a3-lazy-load' ),
-				'reset_message'		=> __( 'Settings successfully reseted.', 'a3-lazy-load' ),
+				'success_message'	=> __( 'Settings successfully saved.' ),
+				'error_message'		=> __( 'Error: Settings can not save.' ),
+				'reset_message'		=> __( 'Settings successfully reseted.' ),
 			);
 
 		add_action( $this->plugin_name . '-' . $this->form_key . '_settings_end', array( $this, 'include_script' ) );
@@ -108,9 +114,7 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
 	/* Set default settings with function called from Admin Interface */
 	/*-----------------------------------------------------------------------------------*/
 	public function set_default_settings() {
-		global $a3_lazy_load_admin_interface;
-
-		$a3_lazy_load_admin_interface->reset_settings( $this->form_fields, $this->option_name, false );
+		$GLOBALS[$this->plugin_prefix.'admin_interface']->reset_settings( $this->form_fields, $this->option_name, false );
 	}
 
 	/*-----------------------------------------------------------------------------------*/
@@ -130,9 +134,7 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
 	/* Get settings with function called from Admin Interface */
 	/*-----------------------------------------------------------------------------------*/
 	public function get_settings() {
-		global $a3_lazy_load_admin_interface;
-
-		$a3_lazy_load_admin_interface->get_settings( $this->form_fields, $this->option_name );
+		$GLOBALS[$this->plugin_prefix.'admin_interface']->get_settings( $this->form_fields, $this->option_name );
 	}
 
 	/**
@@ -176,10 +178,9 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
 	/* Call the form from Admin Interface
 	/*-----------------------------------------------------------------------------------*/
 	public function settings_form() {
-		global $a3_lazy_load_admin_interface;
 
 		$output = '';
-		$output .= $a3_lazy_load_admin_interface->admin_forms( $this->form_fields, $this->form_key, $this->option_name, $this->form_messages );
+		$output .= $GLOBALS[$this->plugin_prefix.'admin_interface']->admin_forms( $this->form_fields, $this->form_key, $this->option_name, $this->form_messages );
 
 		return $output;
 	}
@@ -190,8 +191,10 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
 	/*-----------------------------------------------------------------------------------*/
 	public function init_form_fields() {
 
+		global $a3_lazy_load_excludes;
+
   		// Define settings
-     	$this->form_fields = apply_filters( $this->option_name . '_settings_fields', array(
+     	$this->form_fields = array(
      		array(
             	'name' 		=> __( 'Plugin Framework Global Settings', 'a3-lazy-load' ),
             	'id'		=> 'plugin_framework_global_box',
@@ -232,9 +235,21 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
                 'is_box'	=> true,
            	),
            	array(
-				'name' 		=> __( 'Enable Lazy Load', 'a3-lazy-load' ),
+				'name' 		=> __( 'a3 Lazy Load', 'a3-lazy-load' ),
                 'id' 		=> 'a3l_apply_lazyloadxt',
+                'desc'		=> __( 'On and a3 Lazy Load will lazy load elements that are missed by WordPress Core Lazy Load.', 'a3-lazy-load' ),
                 'class'		=> 'a3l_apply_to_load',
+				'type' 		=> 'onoff_checkbox',
+				'default'	=> true,
+				'checked_value'		=> true,
+				'unchecked_value'	=> false,
+				'checked_label'		=> __( 'ON', 'a3-lazy-load' ),
+				'unchecked_label' 	=> __( 'OFF', 'a3-lazy-load' ),
+			),
+			array(
+				'name' 		=> __( 'WordPress Core Lazy Load', 'a3-lazy-load' ),
+                'id' 		=> 'a3l_wpcore_lazyload',
+                'desc'		=> __( 'Switch to OFF to completely disable WordPress core Lazy Load.', 'a3-lazy-load' ),
 				'type' 		=> 'onoff_checkbox',
 				'default'	=> true,
 				'checked_value'		=> true,
@@ -254,6 +269,7 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
 				'name' 		=> __( 'Enable Lazy Load for Images', 'a3-lazy-load' ),
                 'id' 		=> 'a3l_apply_to_images',
                 'class'		=> 'a3l_apply_to_images',
+                'desc'		=> __( '100% Compatible with WordPress 5.5 image lazy load and will enhance its coverage on this site.', 'a3-lazy-load' ),
 				'type' 		=> 'onoff_checkbox',
 				'default'	=> true,
 				'checked_value'		=> true,
@@ -307,13 +323,6 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
 				'unchecked_label' 	=> __( 'OFF', 'a3-lazy-load' ),
 			),
 			array(
-				'name' => __( 'Skip Images Classes', 'a3-lazy-load' ),
-				'id' 		=> 'a3l_skip_image_with_class',
-				'desc' 		=>  __('Find and enter image class name. If more than 1 then comma seperate.<br>Example: image-class1, image-class2', 'a3-lazy-load' ),
-				'type' 		=> 'text',
-				'default'	=> ""
-			),
-			array(
 				'name' 		=> __( 'Noscript Support', 'a3-lazy-load' ),
                 'id' 		=> 'a3l_image_include_noscript',
                 'desc'		=> __( 'Turn ON to activate Noscript tag as a fallback to show images for users who have JavaScript disabled in their browser.', 'a3-lazy-load' ),
@@ -324,7 +333,33 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
 				'checked_label'		=> __( 'ON', 'a3-lazy-load' ),
 				'unchecked_label' 	=> __( 'OFF', 'a3-lazy-load' ),
 			),
-
+			array(
+				'name' 		=> __( 'Exclude Images', 'a3-lazy-load' ),
+                'type' 		=> 'heading',
+				'class'		=> 'a3l_apply_to_load_images_container',
+				'desc'		=> __( 'Images can be excluded from Lazy Load by entering existing image classnames below or if the image has no classname by adding the exclusion <code>skip-lazy</code> classname or <code>data-skip-lazy</code> attribute to the image. Examples, by class <code>&#x3C;img class="skip-lazy"&#x3E;</code> , by attribute <code>&#x3C;img data-skip-lazy&#x3E;</code>', 'a3-lazy-load' )
+           	),
+			array(
+				'name' => __( 'Skip Images Classes', 'a3-lazy-load' ),
+				'id' 		=> 'a3l_skip_image_with_class',
+				'desc' 		=>  __('Find and enter image class name. If more than 1 then comma seperate.<br>Example: image-class1, image-class2. Supports Wild Cards image*, .*thumbnail', 'a3-lazy-load' ),
+				'type' 		=> 'text',
+				'default'	=> ""
+			),
+			array(
+				'name' 		=> __( 'Horizontal Scroll', 'a3-lazy-load' ),
+                'type' 		=> 'heading',
+				'class'		=> 'a3l_apply_to_load_images_container',
+				'desc'		=> __( 'a3 Lazy Load has built in support for Horizontal Scrolling image galleries BUT you must enter the container classname or ID below for it to apply to that horizontal scroll container. Use your code inspector to get the correct classname or ID, it will have style is <code>overflow-x:scroll</code>', 'a3-lazy-load' )
+           	),
+			array(
+				'name' => __( 'Container Classnames or IDs', 'a3-lazy-load' ),
+				'id' 		=> 'a3l_horizontal_trigger_classnames',
+				'desc' 		=>  __('Prepend Classnames with a dot example <code>.images_holder</code>, Prepend IDs with hash tag example <code>#wrapper</code> and Comma separate if more than one.', 'a3-lazy-load' ),
+				'type' 		=> 'text',
+				'default'	=> ""
+			),
+			
 
 			array(
 				'name'		=> __( 'Lazy Load Videos and iframes', 'a3-lazy-load' ),
@@ -371,13 +406,6 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
 				'unchecked_label' 	=> __( 'OFF', 'a3-lazy-load' ),
 			),
 			array(
-				'name' => __( 'Skip Videos Classes', 'a3-lazy-load' ),
-				'id' 		=> 'a3l_skip_video_with_class',
-				'desc' 		=>  __('Find and enter video class name. If more than 1 then comma seperate.<br>Example: video-class1, video-class2', 'a3-lazy-load' ),
-				'type' 		=> 'text',
-				'default'	=> ""
-			),
-			array(
 				'name' 		=> __( 'Noscript Support', 'a3-lazy-load' ),
                 'id' 		=> 'a3l_video_include_noscript',
                 'desc'		=> __( 'Turn ON to activate Noscript tag as a fallback to show WordPress Embeds, HTML 5 Video and iframe loaded content for users who have JavaScript disabled in their browser.', 'a3-lazy-load' ),
@@ -388,7 +416,75 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
 				'checked_label'		=> __( 'ON', 'a3-lazy-load' ),
 				'unchecked_label' 	=> __( 'OFF', 'a3-lazy-load' ),
 			),
+			array(
+				'name' 		=> __( 'Exclude Videos / iframes', 'a3-lazy-load' ),
+                'type' 		=> 'heading',
+				'class'		=> 'a3l_apply_to_load_videos_container',
+				'desc'		=> __( 'Videos and iFrames can be excluded from Lazy Load either by entering existing classnames below or if it has has no classname by adding the exclusion <code>skip-lazy</code> classname or <code>data-skip-lazy</code> attribute to the video / iframe. Examples, by class <code>&#x3C;video class="skip-lazy"&#x3E;</code>, by attribute <code>&#x3C;video data-skip-lazy&#x3E;</code>', 'a3-lazy-load' )
+           	),
+			array(
+				'name' => __( 'Skip Videos Classes', 'a3-lazy-load' ),
+				'id' 		=> 'a3l_skip_video_with_class',
+				'desc' 		=>  __('Find and enter video class name. If more than 1 then comma seperate.<br>Example: video-class1, video-class2. Supports WildCards video*, .*video', 'a3-lazy-load' ),
+				'type' 		=> 'text',
+				'default'	=> ""
+			),
+     	);
 
+		$this->form_fields = array_merge( $this->form_fields, array(
+			array(
+				'name'		=> __( "Exclude by URI's and Page Types", 'a3-lazy-load' ),
+                'type' 		=> 'heading',
+                'class'		=> 'a3l_apply_to_load_container',
+                'id'		=> 'a3l_exclude_box',
+                'is_box'	=> true,
+           	),
+           	array(
+				'name'		=> __( 'Exclude by URIs', 'a3-lazy-load' ),
+                'type' 		=> 'heading',
+                'desc' 		=>  __("Add strings, 1 per line (not full filenames) that are to be excluded from Lazy Load. Example, if your URL looks like this /domain-name/2018/example-post/ and you just want to exclude that post enter /example-post/. If you want to exclude all posts in /2018/ just year enter /2018/ and Lazy Load won't be applied to /example-post/ and all other posts prefixed by /2018/ in the URL.", 'a3-lazy-load' ),
+           	),
+			array(
+				'name' => __( 'URIs', 'a3-lazy-load' ),
+				'id' 		=> 'a3l_uris_exclude',
+				'type' 		=> 'textarea',
+				'css'		=> 'width: 100%; max-width: 90%;',
+				'custom_attributes'	=> array(
+					'cols' => 50,
+					'rows' => 10,
+				),
+				'placeholder'	=> __('Enter each URI per row', 'a3-lazy-load' ),
+			),
+			array(
+				'name'		=> __( 'Page Type Exclusions', 'a3-lazy-load' ),
+                'type' 		=> 'heading',
+                'desc' 		=>  __("Do not apply lazy load for the following page types", 'a3-lazy-load' ),
+           	),
+		) );
+
+		$objects_exclude_options = array();
+		$objects_list            = $a3_lazy_load_excludes->get_hard_objects_list();
+		$post_types_list         = $a3_lazy_load_excludes->get_post_types_list();
+		$objects_list            = array_merge( $objects_list, $post_types_list );
+
+		if ( ! empty( $objects_list ) ) {
+			foreach ( $objects_list as $object_key => $object_name ) {
+				$objects_exclude_options[] = array(
+					'name' 		=> $object_name,
+	                'id' 		=> 'a3l_objects_exclude['.$object_key.']',
+					'type' 		=> 'onoff_checkbox',
+					'default'	=> 0,
+					'checked_value'		=> 1,
+					'unchecked_value'	=> 0,
+					'checked_label'		=> __( 'ON', 'a3-lazy-load' ),
+					'unchecked_label' 	=> __( 'OFF', 'a3-lazy-load' ),
+				);
+			}
+
+			$this->form_fields = array_merge( $this->form_fields, $objects_exclude_options );
+		}
+
+		$this->form_fields = array_merge( $this->form_fields, array(
 			array(
 				'name'		=> __( 'Script Load Optimization', 'a3-lazy-load' ),
                 'type' 		=> 'heading',
@@ -470,15 +566,35 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
                 'is_box'	=> true,
            	),
 			array(
-				'name' 		=> __( 'Threshold', 'a3-lazy-load' ),
+				'name' 		=> __( 'Threshold (px)', 'a3-lazy-load' ),
 				'id' 		=> 'a3l_edgeY',
-				'desc'		=> 'px ' . __( 'Expands visible page area (viewport) in vertical direction by the amount of pixels set. Elements start to load as soon as the reach the threshold instead of when they reach the actual viewport.', 'a3-lazy-load' ),
+				'desc'		=> __( 'Expands visible page area (viewport) in vertical direction by the amount of pixels set. Elements start to load as soon as they reach the threshold instead of when they reach the actual viewport.', 'a3-lazy-load' ),
 				'type' 		=> 'text',
 				'default'	=> 0,
 				'css'		=> 'width: 80px;'
 			),
 
-     	));
+			array(
+				'name' 		=> __( 'Jetpack Site Accelerator (Photon) Compatibility', 'a3-lazy-load' ),
+				'class'		=> 'a3l_apply_to_load_container',
+                'type' 		=> 'heading',
+                'id'		=> 'a3l_jetpack_compatibility_box',
+                'is_box'	=> true,
+           	),
+			array(
+				'name' 		=> __( 'Jetpack Compatibility', 'a3-lazy-load' ),
+				'desc' 		=>  __("If using Jetpack Site Accelerator turn this option on so your Jetpack CDN images can be lazy loaded.", 'a3-lazy-load' ),
+                'id' 		=> 'a3l_jetpack_site_accelerator_compatibility',
+				'type' 		=> 'onoff_checkbox',
+				'default'	=> false,
+				'checked_value'		=> true,
+				'unchecked_value'	=> false,
+				'checked_label'		=> __( 'ON', 'a3-lazy-load' ),
+				'unchecked_label' 	=> __( 'OFF', 'a3-lazy-load' ),
+			),
+		) );
+
+		$this->form_fields = apply_filters( $this->option_name . '_settings_fields', $this->form_fields );
 	}
 
 	public function include_script() {
@@ -534,8 +650,9 @@ class A3_Lazy_Load_Global_Settings extends A3_Lazy_Load_Admin_UI
 	}
 }
 
-global $a3_lazy_load_global_settings_panel;
-$a3_lazy_load_global_settings_panel = new A3_Lazy_Load_Global_Settings();
+}
+
+namespace {
 
 /**
  * a3_lazy_load_cards_settings_form()
@@ -546,4 +663,4 @@ function a3_lazy_load_global_settings_form() {
 	$a3_lazy_load_global_settings_panel->settings_form();
 }
 
-?>
+}
